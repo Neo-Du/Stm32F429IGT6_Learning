@@ -5,3 +5,4 @@
 !/**/Debug/*.hex
 !/**/Debug/*.bin
 /.metadata/*
+/RemoteSystemsTempFiles/*
