@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<section name="Workbench">
-	<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
-		<item value="F:\File\STM32\stm32_exercise\Cube_IDE_Workspace\F429_Workspace\Stm32F429IGT6_Learning\01_LedBlink"/>
-		<item value="F:\File\STM32\stm32_exercise\Cube_IDE_Workspace\F429_Workspace\Stm32F429IGT6_Learning\00_Start"/>
-		<item value="F:\File\STM32\stm32_exercise\Cube_IDE_Workspace\F429_Workspace\00_Start"/>
-	</list>
-</section>
