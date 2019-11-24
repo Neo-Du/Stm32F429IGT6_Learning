@@ -39,11 +39,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  17 .debug_line   00005b56  00000000  00000000  0004b77b  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_str    000ced71  00000000  00000000  000512d1  2**0
+ 18 .debug_str    000ced88  00000000  00000000  000512d1  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .comment      0000007b  00000000  00000000  00120042  2**0
+ 19 .comment      0000007b  00000000  00000000  00120059  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00001894  00000000  00000000  001200c0  2**2
+ 20 .debug_frame  00001894  00000000  00000000  001200d4  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -3169,15 +3169,15 @@ int main(void)
  8001510:	2102      	movs	r1, #2
  8001512:	4808      	ldr	r0, [pc, #32]	; (8001534 <main+0x40>)
  8001514:	f7ff fb27 	bl	8000b66 <HAL_GPIO_TogglePin>
-	HAL_Delay(100);
- 8001518:	2064      	movs	r0, #100	; 0x64
+	HAL_Delay(10);
+ 8001518:	200a      	movs	r0, #10
  800151a:	f7ff f859 	bl	80005d0 <HAL_Delay>
 	HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
  800151e:	2101      	movs	r1, #1
  8001520:	4804      	ldr	r0, [pc, #16]	; (8001534 <main+0x40>)
  8001522:	f7ff fb20 	bl	8000b66 <HAL_GPIO_TogglePin>
-	HAL_Delay(200);
- 8001526:	20c8      	movs	r0, #200	; 0xc8
+	HAL_Delay(20);
+ 8001526:	2014      	movs	r0, #20
  8001528:	f7ff f852 	bl	80005d0 <HAL_Delay>
 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
  800152c:	e7f0      	b.n	8001510 <main+0x1c>
