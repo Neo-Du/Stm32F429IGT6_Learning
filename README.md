@@ -8,19 +8,19 @@
 ## Hardware
 **STM32F429 阿波罗**
 ### Board front
-![STM32F4 board](Document\Picture\STM32F4_APPLO.png)
+![STM32F4 board](Document/Picture/STM32F4_APPLO.png)
 ### Board front
-![STM32F4 Back](Document\Picture\MotherBoard_back.png)
+![STM32F4 Back](Document/Picture/MotherBoard_back.png)
 ### MotherBoard front
-![STM32F4 Back](Document\Picture\MotherBoard.png)
+![STM32F4 Back](Document/Picture/MotherBoard.png)
 ### Core top
-![STM32F4 Back](Document\Picture\Core_top.png)
+![STM32F4 Back](Document/Picture/Core_top.png)
 ### Core back
-![STM32F4 Back](Document\Picture\Core_back.png)
+![STM32F4 Back](Document/Picture/Core_back.png)
 ## Software
 **CubeIDE**
 ### Core back
-![CubeIDE](Document\Picture\CubeIDE.png)
+![CubeIDE](Document/Picture/CubeIDE.png)
 
 ## License
 
