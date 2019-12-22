@@ -9,7 +9,7 @@
 **STM32F429 阿波罗**
 ### Board front
 ![STM32F4 board](Document/Picture/STM32F4_APPLO.png)
-### Board front
+### Board back
 ![STM32F4 Back](Document/Picture/MotherBoard_back.png)
 ### MotherBoard front
 ![STM32F4 Back](Document/Picture/MotherBoard.png)
