@@ -63,7 +63,10 @@ void Error_Handler(void);
 #define EN_Pin GPIO_PIN_6
 #define EN_GPIO_Port GPIOI
 /* USER CODE BEGIN Private defines */
-
+void step_set_dir (uint16_t dir);
+void step_set_speed (uint16_t speed);
+void step_set_steps (uint32_t steps);
+void step_start ();
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
