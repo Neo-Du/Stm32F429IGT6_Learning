@@ -16,22 +16,17 @@
  *
  ******************************************************************************
  */
-
-//todo: 查找连续写入的方式。
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "spi.h"
-#include "tim.h"
 #include "gpio.h"
+#include "fmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
-#include <tpad.h>
-#include <SSD1306_SPI.h>
-#include <bad_apple_pic.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,6 +37,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define SDRAM_BANK_ADDR     ((uint32_t)0XC0000000)
+#define WRITE_READ_ADDR     ((uint32_t)0x0800)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,6 +49,27 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+uint32_t aMemory[262144] __attribute__((section(".ExtRAMData")));
+uint32_t aMemory1[262144] __attribute__((section(".ExtRAMData1"))); // 1024 * 1024 /4    //1MB / 4
+
+
+/*
+#if (defined ( __CC_ARM ))
+U32 aMemory[GUI_NUMBYTES / 4] __attribute__((at(MEM_BASE)));
+#elif (defined (__ICCARM__))
+#pragma location = MEM_BASE
+__no_init U32 aMemory[GUI_NUMBYTES / 4];
+#elif defined ( __GNUC__ )
+U32 aMemory[GUI_NUMBYTES / 4] __attribute__((section(".ExtRAMData1")));
+#endif
+
+__CC_ARM 	-->  U32 aMemory[GUI_NUMBYTES / 4] __attribute__((at(MEM_BASE)));
+__ICCARM__ 	-->  _no_init U32 aMemory[GUI_NUMBYTES / 4];
+__GNUC__ 	-->  aMemory[GUI_NUMBYTES / 4] __attribute__((section(".ExtRAMData1")));
+
+*/
+
 
 /* USER CODE END PV */
 
@@ -94,54 +112,53 @@ int main (void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init ();
-    MX_TIM2_Init ();
-    MX_SPI4_Init ();
+    MX_FMC_Init ();
+    SDRAM_Init ();
     /* USER CODE BEGIN 2 */
     printf ("Start\r\n");
+    uint32_t ts = 0;
 
-    OLED_Init ();
+    uint32_t i = 0;
+    uint32_t temp = 0;
+    uint32_t sval = 0;
 
-    OLED_Fill (0, 0, 127, 63, 0);
-    HAL_Delay (300);
-    OLED_Fill (0, 0, 127, 63, 1);
-    HAL_Delay (300);
-
-    OLED_Send_pic ();
-
-    while (1)
+    for (i = 0; i < 262144; i++)
     {
-	OLED_WR_Byte (0x26, OLED_CMD);
-	OLED_WR_Byte (0x00, OLED_CMD);
-	OLED_WR_Byte (0x00, OLED_CMD); //start page
-	OLED_WR_Byte (0x07, OLED_CMD);
-	OLED_WR_Byte (0x03, OLED_CMD); //end page
-	OLED_WR_Byte (0x00, OLED_CMD);
-	OLED_WR_Byte (0xff, OLED_CMD);
-
-	OLED_WR_Byte (0x2f, OLED_CMD);
-	HAL_Delay (1000);
-	OLED_WR_Byte (0x2e, OLED_CMD);
-
-	OLED_WR_Byte (0x29, OLED_CMD);
-	OLED_WR_Byte (0x00, OLED_CMD);
-	OLED_WR_Byte (0x00, OLED_CMD);
-	OLED_WR_Byte (0x07, OLED_CMD);
-	OLED_WR_Byte (0x07, OLED_CMD);
-	OLED_WR_Byte (0x01, OLED_CMD);
-
-	OLED_WR_Byte (0x2f, OLED_CMD);
-	HAL_Delay (1000);
-	OLED_WR_Byte (0x2e, OLED_CMD);
+	aMemory[i] = i;
+	aMemory1[i] = i * 2;
     }
 
+    for (i = 0; i < 262144; i++)
+    {
+
+	temp = aMemory[i];
+	sval = aMemory1[i];
+    }
+
+//    printf("start at %d \r\n",HAL_GetTick());
+//    for (i=0;i<8*1024*1024;i++)
+//    {
+//	*(__IO uint32_t*) (Bank5_SDRAM_ADDR + WRITE_READ_ADDR + i ) = 0;
+//    }
+//    printf("step1 at %d \r\n",HAL_GetTick());
+//    for (i=0;i<8*1024*1024;i+=4)
+//    {
+//	*(__IO uint32_t*) (Bank5_SDRAM_ADDR + WRITE_READ_ADDR + i ) = temp;
+//	temp++;
+//    }
+//    printf("step2 at %d \r\n",HAL_GetTick());
+//    for (i=0;i<8*1024*1024;i+=4)
+//    {
+//	printf ("read[%d]:%d\r\n", i,*(__IO uint32_t*)(Bank5_SDRAM_ADDR+ WRITE_READ_ADDR+i));
+//    }
+//    printf("step3 at %d \r\n",HAL_GetTick());
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1)
     {
-	TPAD_Scan (0);
-	HAL_Delay (10);
+
 	/* USER CODE END WHILE */
 
 	/* USER CODE BEGIN 3 */
@@ -186,8 +203,7 @@ void SystemClock_Config (void)
     }
     /** Initializes the CPU, AHB and APB busses clocks
      */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
-	    | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
