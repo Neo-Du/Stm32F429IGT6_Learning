@@ -6,3 +6,5 @@
 !/**/Debug/*.bin
 /.metadata/*
 /RemoteSystemsTempFiles/*
+.vscode/
+*.xml
