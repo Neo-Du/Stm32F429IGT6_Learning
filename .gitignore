@@ -8,3 +8,5 @@
 /RemoteSystemsTempFiles/*
 .vscode/
 *.xml
+/.metadata/
+*.launch

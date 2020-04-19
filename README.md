@@ -19,7 +19,6 @@
 ![STM32F4 Back](Document/Picture/Core_back.png)
 ## Software
 **CubeIDE**
-### Core back
 ![CubeIDE](Document/Picture/CubeIDE.png)
 
 ## License
