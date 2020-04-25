@@ -1,26 +1,25 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.</center></h2>
+  *
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
+  *
+  ******************************************************************************
+  */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -46,7 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t adc_value = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,29 +88,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-    printf ("Start\r\n");
-    //IT mode
-    //HAL_ADC_Start_IT(&hadc1);
-
-    HAL_ADC_Start (&hadc1);
+  printf("Start\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    while (1)
-    {
-	//polling
-//	HAL_ADC_Start (&hadc1);
-//	HAL_ADC_PollForConversion (&hadc1, 10);
-//	while (HAL_ADC_GetState (&hadc1) == HAL_ADC_STATE_BUSY_INTERNAL);
-//	printf ("ADC:%ld\r\n", HAL_ADC_GetValue (&hadc1));
-	adc_value = HAL_ADC_GetValue (&hadc1);
+  while (1)
+  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    }
+  }
   /* USER CODE END 3 */
 }
 
@@ -165,21 +153,16 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-int _write (int file,char*ptr,int len)
-{
-    int DataIdx;
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
-    {
-	ITM_SendChar (*ptr++);
-    }
-    return len;
+
+int _write(int file, char *ptr, int len) {
+	int DataIdx;
+	for (DataIdx = 0; DataIdx < len; DataIdx++) {
+		ITM_SendChar(*ptr++);
+	}
+	return len;
 }
-void HAL_ADC_ConvCpltCallback (ADC_HandleTypeDef*AdcHandle)
-{
-    /* Get the converted value of regular channel */
-    printf ("%d\r\n", HAL_ADC_GetValue (AdcHandle));
-    //HAL_ADC_Start_IT(&hadc1);
-}
+
+
 /* USER CODE END 4 */
 
 /**
@@ -189,7 +172,7 @@ void HAL_ADC_ConvCpltCallback (ADC_HandleTypeDef*AdcHandle)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-    /* User can add his own implementation to report the HAL error return state */
+  /* User can add his own implementation to report the HAL error return state */
 
   /* USER CODE END Error_Handler_Debug */
 }
