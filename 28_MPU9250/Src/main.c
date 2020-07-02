@@ -1,30 +1,34 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <mpu9250.h>
+#include <inv_mpu_dmp_motion_driver.h>
+#include <inv_mpu.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +49,15 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+int16_t gyro[3] = { 0 };
+int16_t accel[3] = { 0 };
+int16_t compass[3] = { 0 };
+
+float row = 0.0;
+float yaw = 0.0;
+float pitch = 0.0;
+
+int16_t temperature = 0;
 
 /* USER CODE END PV */
 
@@ -88,18 +101,29 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-  printf("Start\r\n");
+    printf ("Start\r\n");
+    mpu_dmp_init ();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+    while (1)
+    {
+//	mpu_get_gyro_reg (gyro, 0);
+//	mpu_get_accel_reg (compass, 0);
+//	mpu_get_compass_reg (accel, 0);
+//	mpu_get_temperature (&temperature, 0);
+//	printf ("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\r\n", gyro[0], gyro[1], gyro[2], compass[0], compass[1], compass[2], accel[0], accel[1], accel[2], temperature);
+	mpu_dmp_get_data(&pitch,&row,&yaw);
+	//printf("%f\t%f\t%f\r\n",pitch,row,yaw);
+	HAL_Delay (20);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+    }
   /* USER CODE END 3 */
 }
 
@@ -153,15 +177,15 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-
-int _write(int file, char *ptr, int len) {
-	int DataIdx;
-	for (DataIdx = 0; DataIdx < len; DataIdx++) {
-		ITM_SendChar(*ptr++);
-	}
-	return len;
+int _write (int file,char*ptr,int len)
+{
+    int DataIdx;
+    for (DataIdx = 0; DataIdx < len; DataIdx++)
+    {
+	ITM_SendChar (*ptr++);
+    }
+    return len;
 }
-
 
 /* USER CODE END 4 */
 
@@ -172,7 +196,7 @@ int _write(int file, char *ptr, int len) {
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+    /* User can add his own implementation to report the HAL error return state */
 
   /* USER CODE END Error_Handler_Debug */
 }
