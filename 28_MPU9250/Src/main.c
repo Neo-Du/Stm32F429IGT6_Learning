@@ -118,7 +118,7 @@ int main(void)
 //	mpu_get_temperature (&temperature, 0);
 //	printf ("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\r\n", gyro[0], gyro[1], gyro[2], compass[0], compass[1], compass[2], accel[0], accel[1], accel[2], temperature);
 	mpu_dmp_get_data(&pitch,&row,&yaw);
-	//printf("%f\t%f\t%f\r\n",pitch,row,yaw);
+	printf("%f\t%f\t%f\r\n",pitch,row,yaw);
 	HAL_Delay (20);
     /* USER CODE END WHILE */
 
