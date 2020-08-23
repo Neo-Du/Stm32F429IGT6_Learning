@@ -46,9 +46,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t readData[30] = { };
+uint8_t readData[30] = { };
 
-const uint8_t TEXT_Buffer[] = { "STM32 FLASH TEST" };
+const uint8_t TEXT_Buffer[] = { "this is a test 0" };
 #define TEXT_LENTH sizeof(TEXT_Buffer)	 		  	//数组长度
 #define SIZE TEXT_LENTH/4+((TEXT_LENTH%4)?1:0)
 #define FLASH_SAVE_ADDR  0X08010000
@@ -72,7 +72,7 @@ void SystemClock_Config (void);
 int main (void)
 {
     /* USER CODE BEGIN 1 */
-    uint8_t datatemp[SIZE];
+
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -95,10 +95,10 @@ int main (void)
     MX_GPIO_Init ();
     /* USER CODE BEGIN 2 */
     printf ("Start\r\n");
-    uint32_t temp = 0;//???????????????????????????????????????
-//    data32 = *(__IO uint32_t*) FLASH_SAVE_ADDR;
-    //HAL_Delay (10);
-    STMFLASH_Read (FLASH_SAVE_ADDR, (uint32_t*) datatemp, SIZE);
+
+    STMFLASH_Write (FLASH_SAVE_ADDR, (uint32_t*) TEXT_Buffer, SIZE);
+    HAL_Delay (10);
+    STMFLASH_Read (FLASH_SAVE_ADDR, (uint32_t*) readData, SIZE);
     /* USER CODE END 2 */
 
     /* Infinite loop */
