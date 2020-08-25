@@ -19,4 +19,10 @@
 #define SCCB_SET_SDA_IN()  {GPIOB->MODER&=~(3<<(3*2));GPIOB->MODER|=0<<3*2;}	//PB3 input
 #define SCCB_SET_SDA_OUT() {GPIOB->MODER&=~(3<<(3*2));GPIOB->MODER|=1<<3*2;}	//PB3 output
 
+void SCCB_Start (void);
+void SCCB_Stop (void);
+void SCCB_No_Ack (void);
+uint8_t SCCB_WR_Byte (uint8_t data);
+uint8_t SCCB_RD_Byte (void);
+
 #endif /* SCCB_H_ */

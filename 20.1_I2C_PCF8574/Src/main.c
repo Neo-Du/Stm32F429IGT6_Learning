@@ -26,7 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
-
+#include "PCF8574.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,6 +96,9 @@ int main (void)
     MX_I2C2_Init ();
     /* USER CODE BEGIN 2 */
     printf ("Start\r\n");
+    while (PCF8574_Init ());
+    printf ("Init done\r\n");
+
     int data = 0x5f;
     /* USER CODE END 2 */
 
@@ -103,15 +106,12 @@ int main (void)
     /* USER CODE BEGIN WHILE */
     while (1)
     {
-//	HAL_I2C_Master_Receive (&hi2c2, EEPROM_ADDRESS, &read_singnal, 1, 100);
-//	HAL_Delay (1000);
-	data = 0x5f;
-	HAL_I2C_Master_Transmit (&hi2c2, EEPROM_ADDRESS, &data, 1, 100);
-	HAL_Delay (1000);
-	data = 0x4f;
-	HAL_I2C_Master_Transmit (&hi2c2, EEPROM_ADDRESS, &data, 1, 100);
-	HAL_Delay (1000);
-
+	PCF8574_Write_bit (EX_IO, 1);
+	HAL_Delay (100);
+	PCF8574_Write_bit (EX_IO, 0);
+	HAL_Delay (100);
+//	printf ("%d\r\n", PCF8574_Read_bit (EX_IO));
+//	HAL_Delay(100);
 	/* USER CODE END WHILE */
 
 	/* USER CODE BEGIN 3 */
