@@ -22,6 +22,7 @@
 #include "main.h"
 #include "dcmi.h"
 #include "dma2d.h"
+#include "i2c.h"
 #include "ltdc.h"
 #include "gpio.h"
 #include "fmc.h"
@@ -30,6 +31,7 @@
 /* USER CODE BEGIN Includes */
 #include "LTDC_LCD.h"
 #include "sdRAM.h"
+#include "OV5640.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,12 +100,14 @@ int main (void)
     MX_FMC_Init ();
     MX_LTDC_Init ();
     MX_DMA2D_Init ();
+    MX_I2C2_Init ();
     /* USER CODE BEGIN 2 */
     LCD_Init ();
     SDRAM_Init ();
 
     HAL_GPIO_WritePin (LTDC_BL_GPIO_Port, LTDC_BL_Pin, 1);
 
+    OV5640_Init();
     /* USER CODE END 2 */
 
     /* Infinite loop */

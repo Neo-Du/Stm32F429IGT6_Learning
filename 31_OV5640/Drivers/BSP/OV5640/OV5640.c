@@ -5,11 +5,12 @@
  *  Created on: Aug 24, 2020
  *      Author: Du
  */
-
+#include "main.h"
 #include "SCCB.h"
 #include "OV5640.h"
 #include "OV5640AF.h"
 #include "OV5640cfg.h"
+#include "PCF8574.h"
 
 #define u8 uint8_t
 #define u16 uint16_t
@@ -51,26 +52,13 @@ u8 OV5640_Init (void)
 {
     u16 i = 0;
     u16 reg;
-    //设置IO
-    GPIO_InitTypeDef GPIO_Initure;
-    __HAL_RCC_GPIOA_CLK_ENABLE();			//开启GPIOA时钟
-
-    GPIO_Initure.Pin = GPIO_PIN_15;           //PA15
-    GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;  //推挽输出
-    GPIO_Initure.Pull = GPIO_PULLUP;          //上拉
-    GPIO_Initure.Speed = GPIO_SPEED_HIGH;     //高速
-    HAL_GPIO_Init (GPIOA, &GPIO_Initure);     //初始化
-
     PCF8574_Init ();			//初始化PCF8574
-    OV5640_RST = 0;			//必须先拉低OV5640的RST脚,再上电
-    delay_ms (20);
-    OV5640_PWDN_Set (0);		//POWER ON
-    delay_ms (5);
-    a.sd0f.asd0fa.s0df
-    OV5640_RST = 1;			//结束复位
-    delay_ms (20);
-    SCCB_Init ();			//初始化SCCB 的IO口
-    delay_ms (5);
+    HAL_GPIO_WritePin (DCMI_RESET_GPIO_Port, DCMI_RESET_Pin, 0);
+    HAL_Delay (20);
+    PCF8574_Write_bit (DCMI_PWDN_IO, 0);
+    HAL_Delay (5);
+    HAL_GPIO_WritePin (DCMI_RESET_GPIO_Port, DCMI_RESET_Pin, 1);
+    HAL_Delay (20);
     reg = OV5640_RD_Reg (OV5640_CHIPIDH);	//读取ID 高八位
     reg <<= 8;
     reg |= OV5640_RD_Reg (OV5640_CHIPIDL);	//读取ID 低八位
@@ -80,7 +68,7 @@ u8 OV5640_Init (void)
     }
     OV5640_WR_Reg (0x3103, 0X11);	//system clock from pad, bit[1]
     OV5640_WR_Reg (0X3008, 0X82);	//软复位
-    delay_ms (10);
+    HAL_Delay (10);
     //初始化 OV5640,采用SXGA分辨率(1600*1200)
     for (i = 0; i < sizeof(ov5640_uxga_init_reg_tbl) / 4; i++)
     {
