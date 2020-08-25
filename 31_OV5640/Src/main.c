@@ -107,7 +107,10 @@ int main (void)
 
     HAL_GPIO_WritePin (LTDC_BL_GPIO_Port, LTDC_BL_Pin, 1);
 
-    OV5640_Init();
+    OV5640_Init ();
+    OV5640_Focus_Init ();
+    OV5640_Focus_Constant();//启动持续对焦
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -120,13 +123,6 @@ int main (void)
 //	HAL_DMA2D_Start_IT (&hdma2d, 0xFF69B4, 0xc0000000, 1024, 600);
 //
 //	HAL_Delay (1000);
-
-	int i = 560;
-	HAL_GPIO_WritePin (DCMI_SCL_GPIO_Port, DCMI_SCL_Pin, 1);
-	while (i--);
-	HAL_GPIO_WritePin (DCMI_SCL_GPIO_Port, DCMI_SCL_Pin, 0);
-	i = 560;
-	while (i--);
 
 	/* USER CODE END WHILE */
 

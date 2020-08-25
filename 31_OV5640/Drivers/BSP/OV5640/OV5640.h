@@ -10,7 +10,7 @@
 #define OV5640_H_
 
 //#define OV5640_PWDN  	PGout(9)			//POWER DOWN控制信号,由PCF8574_P2控制
-#define OV5640_RST  	PAout(15)//复位控制信号
+//#define OV5640_RST  	PAout(15)//复位控制信号
 //////////////////////////////////////////////////////////////////////////////////
 #define OV5640_ID               0X5640  	//OV5640的芯片ID
 
