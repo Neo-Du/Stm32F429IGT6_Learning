@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dcmi.h"
+#include "dma.h"
 #include "dma2d.h"
 #include "i2c.h"
 #include "ltdc.h"
@@ -42,6 +43,12 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define SDRAM_BANK_ADDR     ((uint32_t)0XC0000000)
+#define jpeg_buf_size   30*1024*1024		//定义JPEG数据缓存jpeg_buf的大小(1*4M字节)
+#define jpeg_line_size	2*1024			//定义DMA接收数据时,一行数据的最大值
+
+#define u8 uint8_t
+#define u16 uint16_t
+#define u32 uint32_t
 
 /* USER CODE END PD */
 
@@ -55,6 +62,13 @@
 /* USER CODE BEGIN PV */
 uint32_t aMemory0[1200 * 800] __attribute__((section(".ExtRAMData"))); // 1024 * 1024 /4    //1MB / 4
 
+uint32_t dcmi_line_buf[2][jpeg_line_size];	//RGB屏时,摄像头采用一行一行读取,定义行缓存
+
+uint32_t *ltdc_framebuf[2];					//LTDC LCD帧缓存数组指针,必须指向对应大小的内存区域
+u16 curline = 0;							//摄像头输出数据,当前行编号
+extern DCMI_HandleTypeDef hdcmi;
+extern DMA_HandleTypeDef hdma_dcmi;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,7 +79,68 @@ void SystemClock_Config (void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void (*dcmi_rx_callback) (void);          //DCMI DMA接收回调函数
 
+void LTDC_Color_Fill (u16 sx,u16 sy,u16 ex,u16 ey,u16*color)
+{
+    u32 psx, psy, pex, pey;	//以LCD面板为基准的坐标系,不随横竖屏变化而变化
+    u32 timeout = 0;
+    u16 offline;
+    u32 addr;
+    //坐标系转换
+    if (1)	//横屏
+    {
+	psx = sx;
+	psy = sy;
+	pex = ex;
+	pey = ey;
+    }
+    else			//竖屏
+    {
+	psx = sy;
+	psy = 1024 - ex - 1;
+	pex = ey;
+	pey = 1024 - sx - 1;
+    }
+    offline = 600 - (pex - psx + 1);
+    addr = ((u32) ltdc_framebuf[0] + 2 * (1024 * psy + psx));
+    __HAL_RCC_DMA2D_CLK_ENABLE();	//使能DM2D时钟
+    DMA2D->CR &= ~(DMA2D_CR_START);	//先停止DMA2D
+    DMA2D->CR = DMA2D_M2M;			//存储器到存储器模式
+    DMA2D->FGPFCCR = 0X02;	//设置颜色格式
+    DMA2D->FGOR = 0;					//前景层行偏移为0
+    DMA2D->OOR = offline;				//设置行偏移
+
+    DMA2D->FGMAR = (u32) color;		//源地址
+    DMA2D->OMAR = addr;				//输出存储器地址
+    DMA2D->NLR = (pey - psy + 1) | ((pex - psx + 1) << 16);	//设定行数寄存器
+    DMA2D->CR |= DMA2D_CR_START;					//启动DMA2D
+    while ((DMA2D->ISR & (DMA2D_FLAG_TC)) == 0)		//等待传输完成
+    {
+	timeout++;
+	if (timeout > 0X1FFFFF)
+	    break;	//超时退出
+    }
+    DMA2D->IFCR |= DMA2D_FLAG_TC;				//清除传输完成标志
+}
+
+void rgblcd_dcmi_rx_callback (void)
+{
+    uint16_t *pbuf;
+    if (hdma_dcmi.Instance->CR & (1 << 19))	//DMA使用buf1,读取buf0
+    {
+	pbuf = (uint16_t*) dcmi_line_buf[0];
+    }
+    else 						//DMA使用buf0,读取buf1
+    {
+	pbuf = (uint16_t*) dcmi_line_buf[1];
+    }
+
+    LTDC_Color_Fill (0, curline, 600 - 1, curline, pbuf); 						//DM2D填充
+
+    if (curline < 1024)
+	curline++;
+}
 /* USER CODE END 0 */
 
 /**
@@ -96,6 +171,7 @@ int main (void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init ();
+    MX_DMA_Init ();
     MX_DCMI_Init ();
     MX_FMC_Init ();
     MX_LTDC_Init ();
@@ -109,7 +185,18 @@ int main (void)
 
     OV5640_Init ();
     OV5640_Focus_Init ();
-    OV5640_Focus_Constant();//启动持续对焦
+    OV5640_Focus_Constant (); //启动持续对焦
+
+    HAL_DMA_Start (&hdma_dcmi, (uint32_t) & DCMI->DR, dcmi_line_buf[0], 300);
+
+    OV5640_WR_Reg (0x3035, 0X51); //降低输出帧率，否则可能抖动
+//    OV5640_OutSize_Set(4,0,lcddev.width,outputheight);		//满屏缩放显示
+
+    //LCD_WriteRAM_Prepare ();		        //开始写入GRAM
+    __HAL_DMA_ENABLE(&hdcmi); //使能DMA
+    DCMI->CR |= DCMI_CR_CAPTURE;          //DCMI捕获使能
+
+    dcmi_rx_callback = rgblcd_dcmi_rx_callback;          //RGB屏接收数据回调函数
 
     /* USER CODE END 2 */
 
@@ -189,6 +276,22 @@ void SystemClock_Config (void)
 
 /* USER CODE BEGIN 4 */
 
+//DCMI中断服务函数
+//void DCMI_IRQHandler (void)
+//{
+//    HAL_DCMI_IRQHandler (&hdma_dcmi);
+//}
+
+
+//DMA2数据流1中断服务函数
+//void DMA2_Stream1_IRQHandler (void)
+//{
+//    if (__HAL_DMA_GET_FLAG(&hdma_dcmi,DMA_FLAG_TCIF1_5) != RESET)          //DMA传输完成
+//    {
+//	__HAL_DMA_CLEAR_FLAG(&hdma_dcmi, DMA_FLAG_TCIF1_5);          //清除DMA传输完成中断标志位
+//	dcmi_rx_callback ();	//执行摄像头接收回调函数,读取数据等操作在这里面处理
+//    }
+//}
 /* USER CODE END 4 */
 
 /**
