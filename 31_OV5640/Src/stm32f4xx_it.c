@@ -42,7 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+volatile uint32_t temp = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -52,7 +52,7 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+extern void (*dcmi_rx_callback) (void);          //DCMI DMA接收回调函数
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -206,9 +206,11 @@ void DMA2_Stream1_IRQHandler(void)
   /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
     if (__HAL_DMA_GET_FLAG(&hdma_dcmi,DMA_FLAG_TCIF1_5) != RESET)          //DMA传输完成
     {
-	__HAL_DMA_CLEAR_FLAG(&hdma_dcmi, DMA_FLAG_TCIF1_5);          //清除DMA传输完成中断标志�?
-	dcmi_rx_callback ();	//执行摄像头接收回调函�?,读取数据等操作在这里面处�?
+	__HAL_DMA_CLEAR_FLAG(&hdma_dcmi, DMA_FLAG_TCIF1_5);          //清除DMA传输完成中断标志�??
+	dcmi_rx_callback ();
+	temp ++;
     }
+    temp ++;
   /* USER CODE END DMA2_Stream1_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_dcmi);
   /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
@@ -222,7 +224,8 @@ void DMA2_Stream1_IRQHandler(void)
 void DCMI_IRQHandler(void)
 {
   /* USER CODE BEGIN DCMI_IRQn 0 */
-
+    HAL_GPIO_TogglePin (GPIOF, GPIO_PIN_6);
+    temp ++;
   /* USER CODE END DCMI_IRQn 0 */
   HAL_DCMI_IRQHandler(&hdcmi);
   /* USER CODE BEGIN DCMI_IRQn 1 */
