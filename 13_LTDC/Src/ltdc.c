@@ -24,6 +24,8 @@
 #include "main.h"
 
 extern uint32_t aBlendedImage[(LAYER_SIZE_X * LAYER_SIZE_Y * LAYER_BYTE_PER_PIXEL) / 4];
+extern const uint32_t RGB565_320x240[38400];
+extern const uint32_t L8_320x240[256];
 
 void LCD_Init (void)
 {
@@ -39,6 +41,7 @@ LTDC_HandleTypeDef hltdc;
 void MX_LTDC_Init(void)
 {
   LTDC_LayerCfgTypeDef pLayerCfg = {0};
+  LTDC_LayerCfgTypeDef pLayerCfg1 = {0};
 
   hltdc.Instance = LTDC;
   hltdc.Init.HSPolarity = LTDC_HSPOLARITY_AL;
@@ -60,22 +63,41 @@ void MX_LTDC_Init(void)
   {
     Error_Handler();
   }
-  pLayerCfg.WindowX0 = 500;
-  pLayerCfg.WindowX1 = 730;
-  pLayerCfg.WindowY0 = 200;
-  pLayerCfg.WindowY1 = 340;
-  pLayerCfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565;
+  pLayerCfg.WindowX0 = 0;
+  pLayerCfg.WindowX1 = 320;
+  pLayerCfg.WindowY0 = 0;
+  pLayerCfg.WindowY1 = 240;
+  pLayerCfg.PixelFormat = LTDC_PIXEL_FORMAT_L8;
   pLayerCfg.Alpha = 255;
   pLayerCfg.Alpha0 = 0;
   pLayerCfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_CA;
   pLayerCfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_CA;
-  pLayerCfg.FBStartAdress = 0xC0000000;
-  pLayerCfg.ImageWidth = 240;
-  pLayerCfg.ImageHeight = 130;
+  pLayerCfg.FBStartAdress = (uint32_t)&L8_320x240;
+  pLayerCfg.ImageWidth = 320;
+  pLayerCfg.ImageHeight = 240;
   pLayerCfg.Backcolor.Blue = 0;
   pLayerCfg.Backcolor.Green = 0;
   pLayerCfg.Backcolor.Red = 0;
   if (HAL_LTDC_ConfigLayer(&hltdc, &pLayerCfg, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  pLayerCfg1.WindowX0 = 703;
+  pLayerCfg1.WindowX1 = 1023;
+  pLayerCfg1.WindowY0 = 359;
+  pLayerCfg1.WindowY1 = 599;
+  pLayerCfg1.PixelFormat = LTDC_PIXEL_FORMAT_RGB565;
+  pLayerCfg1.Alpha = 200;
+  pLayerCfg1.Alpha0 = 0;
+  pLayerCfg1.BlendingFactor1 = LTDC_BLENDING_FACTOR1_CA;
+  pLayerCfg1.BlendingFactor2 = LTDC_BLENDING_FACTOR2_CA;
+  pLayerCfg1.FBStartAdress = (uint32_t)&RGB565_320x240;
+  pLayerCfg1.ImageWidth = 320;
+  pLayerCfg1.ImageHeight = 240;
+  pLayerCfg1.Backcolor.Blue = 0;
+  pLayerCfg1.Backcolor.Green = 0;
+  pLayerCfg1.Backcolor.Red = 0;
+  if (HAL_LTDC_ConfigLayer(&hltdc, &pLayerCfg1, 1) != HAL_OK)
   {
     Error_Handler();
   }

@@ -65,8 +65,9 @@ MEMORY
     CCMRAM	(xrw)	: ORIGIN = 0x10000000,	LENGTH = 64K
     RAM	(xrw)	: ORIGIN = 0x20000000,	LENGTH = 192K
     FLASH	(rx)	: ORIGIN = 0x8000000,	LENGTH = 1024K
-	MEMORY_ARRAY_1 (xrw)  : ORIGIN = 0xC0000000, LENGTH = 4M
-	MEMORY_ARRAY_2 (xrw)  : ORIGIN = 0xC4000000, LENGTH = 4M
+	
+	MEMORY_ARRAY (xrw)  : ORIGIN = 0xC0000000, LENGTH = 2M
+	
 }
 
 /* Sections */
@@ -202,6 +203,5 @@ SECTIONS
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
   
-  .ExtRAMData(NOLOAD)  : {*(.ExtRAMData_1)} > MEMORY_ARRAY_1
-  .ExtRAMData(NOLOAD)  : {*(.ExtRAMData_2)} > MEMORY_ARRAY_2  
+  .ExtRAMData(NOLOAD)  : {*(.ExtRAMData)} > MEMORY_ARRAY 
 }
