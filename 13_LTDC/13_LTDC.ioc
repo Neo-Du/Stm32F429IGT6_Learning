@@ -1,7 +1,9 @@
 #MicroXplorer Configuration settings - do not modify
+DMA2D.AlphaModeForeground=DMA2D_NO_MODIF_ALPHA
 DMA2D.ColorMode=DMA2D_OUTPUT_RGB565
-DMA2D.IPParameters=Mode,ColorMode,OutputOffset
-DMA2D.Mode=DMA2D_R2M
+DMA2D.IPParameters=Mode,ColorMode,OutputOffset,AlphaModeForeground,InputAlphaForeground
+DMA2D.InputAlphaForeground=0
+DMA2D.Mode=DMA2D_M2M
 DMA2D.OutputOffset=0
 FMC.CASLatency1=FMC_SDRAM_CAS_LATENCY_3
 FMC.ColumnBitsNumber1=FMC_SDRAM_COLUMN_BITS_NUM_9
@@ -380,7 +382,7 @@ PI9.GPIO_Speed=GPIO_SPEED_FREQ_VERY_HIGH
 PI9.Mode=RGB565
 PI9.Signal=LTDC_VSYNC
 PinOutPanel.RotationAngle=0
-ProjectManager.AskForMigrate=false
+ProjectManager.AskForMigrate=true
 ProjectManager.BackupPrevious=false
 ProjectManager.CompilerOptimize=6
 ProjectManager.ComputerToolchain=false

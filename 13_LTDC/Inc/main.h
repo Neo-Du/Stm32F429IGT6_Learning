@@ -74,6 +74,11 @@ typedef __IO uint8_t vu8;
 typedef __I uint32_t vuc32;
 typedef __I uint16_t vuc16;
 typedef __I uint8_t vuc8;
+
+#define LAYER_SIZE_X 			240
+#define LAYER_SIZE_Y			130
+#define LAYER_BYTE_PER_PIXEL	2
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
