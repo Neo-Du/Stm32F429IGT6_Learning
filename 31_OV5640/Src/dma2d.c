@@ -36,7 +36,7 @@ void MX_DMA2D_Init(void)
   hdma2d.Init.OutputOffset = 0;
   hdma2d.LayerCfg[1].InputOffset = 0;
   hdma2d.LayerCfg[1].InputColorMode = DMA2D_INPUT_RGB565;
-  hdma2d.LayerCfg[1].AlphaMode = DMA2D_REPLACE_ALPHA;
+  hdma2d.LayerCfg[1].AlphaMode = DMA2D_NO_MODIF_ALPHA;
   hdma2d.LayerCfg[1].InputAlpha = 0;
   if (HAL_DMA2D_Init(&hdma2d) != HAL_OK)
   {

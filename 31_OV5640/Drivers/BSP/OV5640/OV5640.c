@@ -74,10 +74,7 @@ u8 OV5640_Init (void)
     {
 	OV5640_WR_Reg (ov5640_uxga_init_reg_tbl[i][0], ov5640_uxga_init_reg_tbl[i][1]);
     }
-    //检查闪光灯是否正常
-//	OV5640_Flash_Ctrl(1);//打开闪光灯
-//	HAL_Delay(50);
-//	OV5640_Flash_Ctrl(0);//关闭闪光灯
+
     return 0x00; 	//ok
 }
 
@@ -101,7 +98,7 @@ void OV5640_RGB565_Mode (void)
 	OV5640_WR_Reg (ov5640_rgb565_reg_tbl[i][0], ov5640_rgb565_reg_tbl[i][1]);
     }
 //    if (lcdltdc.pwidth != 0)
-	OV5640_WR_Reg (0X3821, 0X06); 	//RGB屏,水平镜像
+    OV5640_WR_Reg (0X3821, 0X06); 	//RGB屏,水平镜像
 }
 
 //EV曝光补偿设置参数表，支持7个等级
@@ -331,6 +328,18 @@ u8 OV5640_OutSize_Set (u16 offx,u16 offy,u16 width,u16 height)
 
     OV5640_WR_Reg (0X3212, 0X13);		//结束组3
     OV5640_WR_Reg (0X3212, 0Xa3);		//启用组3设置
+
+//    OV5640_WR_Reg (0x503d, 0x80);
+//    OV5640_WR_Reg (0x4741, 0x00);
+
+//50FPS
+    OV5640_WR_Reg (0x3035, 0x21);
+    OV5640_WR_Reg (0x3036, 0xAC);
+//100FPS
+//    OV5640_WR_Reg (0x3035, 0x21);
+//    OV5640_WR_Reg (0x3036, 0x69);
+
+
     return 0;
 }
 

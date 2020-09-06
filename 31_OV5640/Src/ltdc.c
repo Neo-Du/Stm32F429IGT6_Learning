@@ -21,7 +21,7 @@
 #include "ltdc.h"
 
 /* USER CODE BEGIN 0 */
-
+extern uint32_t pic_buf[160*120] ;
 /* USER CODE END 0 */
 
 LTDC_HandleTypeDef hltdc;
@@ -52,17 +52,17 @@ void MX_LTDC_Init(void)
     Error_Handler();
   }
   pLayerCfg.WindowX0 = 0;
-  pLayerCfg.WindowX1 = 239;
+  pLayerCfg.WindowX1 = 159;
   pLayerCfg.WindowY0 = 0;
-  pLayerCfg.WindowY1 = 129;
+  pLayerCfg.WindowY1 = 119;
   pLayerCfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565;
   pLayerCfg.Alpha = 255;
   pLayerCfg.Alpha0 = 0;
   pLayerCfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_CA;
   pLayerCfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_CA;
-  pLayerCfg.FBStartAdress = 0xC0000000;
-  pLayerCfg.ImageWidth = 240;
-  pLayerCfg.ImageHeight = 130;
+  pLayerCfg.FBStartAdress = &pic_buf;
+  pLayerCfg.ImageWidth = 160;
+  pLayerCfg.ImageHeight = 120;
   pLayerCfg.Backcolor.Blue = 0;
   pLayerCfg.Backcolor.Green = 0;
   pLayerCfg.Backcolor.Red = 0;
