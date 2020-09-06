@@ -46,8 +46,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define SDRAM_BANK_ADDR     ((uint32_t)0XC0000000)
-#define jpeg_buf_size   30*1024*1024		//定义JPEG数据缓存jpeg_buf的大�??????(1*4M字节)
-#define jpeg_line_size	2*1024			//定义DMA接收数据�??????,�??????行数据的�??????大�??
+#define jpeg_buf_size   30*1024*1024		//定义JPEG数据缓存jpeg_buf的大�???????(1*4M字节)
+#define jpeg_line_size	2*1024			//定义DMA接收数据�???????,�???????行数据的�???????大�??
 
 typedef int32_t s32;
 typedef int16_t s16;
@@ -93,13 +93,12 @@ typedef __I uint8_t vuc8;
 /* USER CODE BEGIN PV */
 uint32_t aMemory0[1200 * 800] __attribute__((section(".ExtRAMData"))); // 1024 * 1024 /4    //1MB / 4
 
-//uint32_t dcmi_line_buf[2][jpeg_line_size];	//RGB屏时,摄像头采用一行一行读�??????,定义行缓�??????
+//uint32_t dcmi_line_buf[2][jpeg_line_size];	//RGB屏时,摄像头采用一行一行读�???????,定义行缓�???????
 
 //uint32_t line_buf[1024 * 4];
 
-uint32_t pic_buf[160*120];
+uint32_t pic_buf[2][160 * 120];
 
-uint32_t *ltdc_framebuf[2];					//LTDC LCD帧缓存数组指�??????,必须指向对应大小的内存区�??????
 extern DCMI_HandleTypeDef hdcmi;
 extern DMA_HandleTypeDef hdma_dcmi;
 
@@ -112,10 +111,17 @@ typedef struct
 #define LCD_BASE        ((u32)(0x60000000 | 0x0007FFFE))
 #define LCD             ((LCD_TypeDef *) LCD_BASE)
 
-u16 curline = 0;							//摄像头输出数�???,当前行编�???
+u16 curline = 0;							//摄像头输出数�????,当前行编�????
 u16 yoffset = 0;							//y方向的偏移量
 
 volatile uint32_t temp2 = 0;
+volatile uint32_t line_callback = 0;
+volatile uint32_t error_callback = 0;
+volatile uint32_t frame_callback = 0;
+volatile uint32_t vsync_callback = 0;
+
+uint32_t t1, t2, t3;
+uint32_t i, j;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -126,118 +132,40 @@ void SystemClock_Config (void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void (*dcmi_rx_callback) (void);          //DCMI DMA接收回调函数
 
-void LCD_WR_REG (vu16 regval)
-{
-    regval = regval;		//使用-O2优化的时�?????,必须插入的延�?????
-    LCD->LCD_REG = regval;		//写入要写的寄存器序号
-}
-void LCD_WR_DATA (vu16 data)
-{
-    data = data;			//使用-O2优化的时�?????,必须插入的延�?????
-    LCD->LCD_RAM = data;
-}
-
-void LCD_SetCursor (u16 Xpos,u16 Ypos)
-{
-    LCD_WR_REG (0);
-    LCD_WR_DATA (Xpos >> 8);
-    LCD_WR_DATA (Xpos & 0XFF);
-    LCD_WR_REG (0);
-    LCD_WR_DATA (Ypos >> 8);
-    LCD_WR_DATA (Ypos & 0XFF);
-}
-
-void LCD_WriteRAM_Prepare (void)
-{
-    LCD->LCD_REG = 0;
-}
-
-void LTDC_Color_Fill (u16 sx,u16 sy,u16 ex,u16 ey,u16*color)
-{
-    u32 psx, psy, pex, pey;	//以LCD面板为基准的坐标�??????,不随横竖屏变化�?�变�??????
-    u32 timeout = 0;
-    u16 offline;
-    u32 addr;
-    //坐标系转�??????
-    if (1)	//横屏
-    {
-	psx = sx;
-	psy = sy;
-	pex = ex;
-	pey = ey;
-    }
-    else			//竖屏
-    {
-	psx = sy;
-	psy = 1024 - ex - 1;
-	pex = ey;
-	pey = 1024 - sx - 1;
-    }
-    offline = 600 - (pex - psx + 1);
-    addr = ((u32) ltdc_framebuf[0] + 2 * (1024 * psy + psx));
-    __HAL_RCC_DMA2D_CLK_ENABLE();	//使能DM2D时钟
-    DMA2D->CR &= ~(DMA2D_CR_START);	//先停止DMA2D
-    DMA2D->CR = DMA2D_M2M;			//存储器到存储器模�??????
-    DMA2D->FGPFCCR = 0X02;	//设置颜色格式
-    DMA2D->FGOR = 0;					//前景层行偏移�??????0
-    DMA2D->OOR = offline;				//设置行偏�??????
-
-    DMA2D->FGMAR = (u32) color;		//源地�??????
-    DMA2D->OMAR = addr;				//输出存储器地�??????
-    DMA2D->NLR = (pey - psy + 1) | ((pex - psx + 1) << 16);	//设定行数寄存�??????
-    DMA2D->CR |= DMA2D_CR_START;					//启动DMA2D
-    while ((DMA2D->ISR & (DMA2D_FLAG_TC)) == 0)		//等待传输完成
-    {
-	timeout++;
-	if (timeout > 0X1FFFFF)
-	    break;	//超时�??????�??????
-    }
-    DMA2D->IFCR |= DMA2D_FLAG_TC;				//清除传输完成标志
-}
-
-void rgblcd_dcmi_rx_callback (void)
-{
-//    uint16_t *pbuf;
-//    if (hdma_dcmi.Instance->CR & (1 << 19))	//DMA使用buf1,读取buf0
-//    {
-//	pbuf = (uint16_t*) dcmi_line_buf[0];
-//    }
-//    else 						//DMA使用buf0,读取buf1
-//    {
-//	pbuf = (uint16_t*) dcmi_line_buf[1];
-//    }
-//
-//    LTDC_Color_Fill (0, curline, 600 - 1, curline, pbuf); 						//DM2D填充
-//
-//    if (curline < 1024)
-//	curline++;
-}
 void jpeg_data_process (void)
 {
     curline = yoffset;	//行数复位
 
     LCD_SetCursor (0, 0);
-    LCD_WriteRAM_Prepare ();		//�???始写入GRAM
+    LCD_WriteRAM_Prepare ();		//�????始写入GRAM
 }
 
-//void HAL_DCMI_FrameEventCallback (DCMI_HandleTypeDef*hdcmi)
-//{
+void HAL_DCMI_FrameEventCallback (DCMI_HandleTypeDef*hdcmi)
+{
 //    jpeg_data_process (); 						//jpeg数据处理
 //    temp2++;
-//    //重新使能帧中�???,因为HAL_DCMI_IRQHandler()函数会关闭帧中断
-//    __HAL_DCMI_ENABLE_IT(hdcmi, DCMI_IT_FRAME);
-//}
+//    //重新使能帧中�????,因为HAL_DCMI_IRQHandler()函数会关闭帧中断
+
+    frame_callback++;
+    __HAL_DCMI_ENABLE_IT(hdcmi, DCMI_IT_FRAME);
+}
 
 void HAL_DCMI_LineEventCallback (DCMI_HandleTypeDef*hdcmi)
 {
-//
-//    HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) &line_buf, 1500);
-//
-//    HAL_DMA2D_Start (&hdma2d, (uint32_t) &line_buf, (uint32_t) &aMemory0, 1024, 1);
+    line_callback++;
+}
+void HAL_DCMI_ErrorCallback (DCMI_HandleTypeDef*hdcmi)
+{
+    error_callback++;
 }
 
+void HAL_DCMI_VsyncEventCallback (DCMI_HandleTypeDef*hdcmi)
+{
+    vsync_callback++;
+    HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[0], (uint32_t) &aMemory0, 160, 120);
+
+}
 /* USER CODE END 0 */
 
 /**
@@ -279,64 +207,59 @@ int main (void)
     //LCD_Init ();
     SDRAM_Init ();
 
+    HAL_GPIO_WritePin (LTDC_BL_GPIO_Port, LTDC_BL_Pin, 1);
 
     OV5640_Init ();
 
     OV5640_RGB565_Mode ();
-
+//    OV5640_Focus_Init ();
+//    OV5640_Light_Mode (0);	//自动模式
+//    OV5640_Color_Saturation (3);	//色彩饱和�???????0
+//    OV5640_Brightness (4);	//亮度0
+//    OV5640_Contrast (3);		//对比�???????0
+//    OV5640_Sharpness (33);	//自动锐度
+//    OV5640_Focus_Constant ();	//启动持续对焦
     OV5640_OutSize_Set (4, 0, 160, 120);
 
+    __HAL_UNLOCK(&hdma_dcmi);
+    HAL_DMAEx_MultiBufferStart (&hdma_dcmi, (uint32_t) &hdcmi.Instance->DR, &pic_buf[0], &pic_buf[1], 160 * 120);		//开启双缓冲
+//    __HAL_DMA_ENABLE_IT(&hdma_dcmi,DMA_IT_TC);
+    //HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) &pic_buf[0], 160 * 120);
 
-    HAL_GPIO_WritePin (LTDC_BL_GPIO_Port, LTDC_BL_Pin, 1);
+//    while (1)
+//    {
+//	HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf, (uint32_t) &aMemory0, 160, 120);
+//	HAL_Delay (10);
+//    }
 
-    HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) &pic_buf, 160*120);
-
-    //HAL_DMA2D_Start (&hdma2d, (uint32_t) &gImage_test_pic3, (uint32_t) &aMemory0, 1024, 4);
-    HAL_Delay (1000);
 //    HAL_DMA2D_Start (&hdma2d, (uint32_t) &line_buf, (uint32_t) &aMemory0, 1024, 4);
 
     while (1)
     {
+	if (hdma_dcmi.Instance->CR & (1 << 19))
+	    i++;
+	else
+	    j++;
     }
-    OV5640_Init ();
-
-    OV5640_RGB565_Mode ();
-
-    OV5640_Focus_Init ();
-    OV5640_Light_Mode (0);	//自动模式
-    OV5640_Color_Saturation (3);	//色彩饱和�??????0
-    OV5640_Brightness (4);	//亮度0
-    OV5640_Contrast (3);		//对比�??????0
-    OV5640_Sharpness (33);	//自动锐度
-    OV5640_Focus_Constant ();	//启动持续对焦
-
-//OV5640_ImageWin_Set (0, 0, 1024, 600);
-
-    OV5640_OutSize_Set (4, 0, 1024, 600);		//满屏缩放显示
-
-//    HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, aMemory0, 1024 * 600);
-
-    while (1);
-
-//    dcmi_rx_callback = rgblcd_dcmi_rx_callback;          //RGB屏接收数据回调函�??????
+//    dcmi_rx_callback = rgblcd_dcmi_rx_callback;          //RGB屏接收数据回调函�???????
 //
 //    __HAL_UNLOCK(&hdma_dcmi);
 //
 //    __HAL_DMA_ENABLE(&hdma_dcmi); //使能DMA
 //    DCMI->CR |= DCMI_CR_CAPTURE;          //DCMI捕获使能
 //    DCMI->CR |= 1 << 14;
-//HAL_DMAEx_MultiBufferStart (&hdma_dcmi, (u32) &DCMI->DR, (uint32_t) dcmi_line_buf[0], (uint32_t) dcmi_line_buf[1], 300);          //�?????启双缓冲
+//HAL_DMAEx_MultiBufferStart (&hdma_dcmi, (u32) &DCMI->DR, (uint32_t) dcmi_line_buf[0], (uint32_t) dcmi_line_buf[1], 300);          //�??????启双缓冲
 //    HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, aMemory0, 1000 * 600);
 //__HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME);
 
-//    __HAL_DMA_ENABLE_IT(&hdma_dcmi, DMA_IT_TC);    //�?????启传输完成中�?????
-//    HAL_NVIC_SetPriority (DMA2_Stream1_IRQn, 0, 0);        //DMA中断优先�?????
+//    __HAL_DMA_ENABLE_IT(&hdma_dcmi, DMA_IT_TC);    //�??????启传输完成中�??????
+//    HAL_NVIC_SetPriority (DMA2_Stream1_IRQn, 0, 0);        //DMA中断优先�??????
 //    HAL_NVIC_EnableIRQ (DMA2_Stream1_IRQn);
 //
 //    OV5640_OutSize_Set (4, 0, 600, 1024);		//满屏缩放显示
 //
 //    LCD_SetCursor (0, 0);
-//    LCD_WriteRAM_Prepare ();		        //�?????始写入GRAM
+//    LCD_WriteRAM_Prepare ();		        //�??????始写入GRAM
 
     /* USER CODE END 2 */
 
@@ -344,12 +267,6 @@ int main (void)
     /* USER CODE BEGIN WHILE */
     while (1)
     {
-//	HAL_DMA2D_Start_IT (&hdma2d, 0x43CD80, 0xc0000000, 1024, 600);
-//
-//	HAL_Delay (1000);
-//	HAL_DMA2D_Start_IT (&hdma2d, 0xFF69B4, 0xc0000000, 1024, 600);
-//
-//	HAL_Delay (1000);
 
 	/* USER CODE END WHILE */
 
@@ -421,13 +338,13 @@ void SystemClock_Config (void)
 //{
 //    HAL_DCMI_IRQHandler (&hdma_dcmi);
 //}
-//DMA2数据�??????1中断服务函数
+//DMA2数据�???????1中断服务函数
 //void DMA2_Stream1_IRQHandler (void)
 //{
 //    if (__HAL_DMA_GET_FLAG(&hdma_dcmi,DMA_FLAG_TCIF1_5) != RESET)          //DMA传输完成
 //    {
-//	__HAL_DMA_CLEAR_FLAG(&hdma_dcmi, DMA_FLAG_TCIF1_5);          //清除DMA传输完成中断标志�??????
-//	dcmi_rx_callback ();	//执行摄像头接收回调函�??????,读取数据等操作在这里面处�??????
+//	__HAL_DMA_CLEAR_FLAG(&hdma_dcmi, DMA_FLAG_TCIF1_5);          //清除DMA传输完成中断标志�???????
+//	dcmi_rx_callback ();	//执行摄像头接收回调函�???????,读取数据等操作在这里面处�???????
 //    }
 //}
 /* USER CODE END 4 */

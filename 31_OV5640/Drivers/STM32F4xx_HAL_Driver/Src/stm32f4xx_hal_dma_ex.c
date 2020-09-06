@@ -115,7 +115,7 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart(DMA_HandleTypeDef *hdma, uint32_t S
   {
     /* Process Locked */
     __HAL_LOCK(hdma);
-    
+    __HAL_DMA_DISABLE(hdma);
     if(HAL_DMA_STATE_READY == hdma->State)
     {
       /* Change DMA peripheral state */
