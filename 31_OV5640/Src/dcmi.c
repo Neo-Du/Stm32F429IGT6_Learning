@@ -125,11 +125,10 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     hdma_dcmi.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
     hdma_dcmi.Init.Mode = DMA_CIRCULAR;
     hdma_dcmi.Init.Priority = DMA_PRIORITY_HIGH;
-    hdma_dcmi.Init.FIFOMode=DMA_FIFOMODE_ENABLE;              //使能FIFO
-    hdma_dcmi.Init.FIFOThreshold=DMA_FIFO_THRESHOLD_HALFFULL; //使用1/2的FIFO
-    hdma_dcmi.Init.MemBurst=DMA_MBURST_SINGLE;                //存储器突发传输
-    hdma_dcmi.Init.PeriphBurst=DMA_PBURST_SINGLE;             //外设突发单次传输
-    HAL_DMA_DeInit(&hdma_dcmi);                               //先清除以前的设置
+    hdma_dcmi.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    hdma_dcmi.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_HALFFULL;
+    hdma_dcmi.Init.MemBurst = DMA_MBURST_SINGLE;
+    hdma_dcmi.Init.PeriphBurst = DMA_PBURST_SINGLE;
     if (HAL_DMA_Init(&hdma_dcmi) != HAL_OK)
     {
       Error_Handler();
@@ -137,12 +136,10 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
 
     __HAL_LINKDMA(dcmiHandle,DMA_Handle,hdma_dcmi);
 
-    /* DCMI interrupt Init */
-
-    HAL_NVIC_SetPriority(DCMI_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DCMI_IRQn);
   /* USER CODE BEGIN DCMI_MspInit 1 */
-
+    __HAL_DMA_ENABLE_IT(&hdma_dcmi,DMA_IT_TC);    //开启传输完成中断
+    HAL_NVIC_SetPriority(DMA2_Stream1_IRQn,0,0);        //DMA中断优先级
+    HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
   /* USER CODE END DCMI_MspInit 1 */
   }
 }

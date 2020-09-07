@@ -42,7 +42,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern DMA_HandleTypeDef hdma_dcmi;
+extern void dcmi_rx_callback ();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -204,7 +205,11 @@ void SysTick_Handler (void)
 void DMA2_Stream1_IRQHandler (void)
 {
     /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
-
+    if (__HAL_DMA_GET_FLAG(&hdma_dcmi,DMA_FLAG_TCIF1_5) != RESET)
+    {
+	__HAL_DMA_CLEAR_FLAG(&hdma_dcmi, DMA_FLAG_TCIF1_5);
+	dcmi_rx_callback ();
+    }
     /* USER CODE END DMA2_Stream1_IRQn 0 */
     HAL_DMA_IRQHandler (&hdma_dcmi);
     /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
