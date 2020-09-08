@@ -21,7 +21,7 @@
 #include "ltdc.h"
 
 /* USER CODE BEGIN 0 */
-extern uint32_t pic_buf[2][160*120] ;
+
 /* USER CODE END 0 */
 
 LTDC_HandleTypeDef hltdc;

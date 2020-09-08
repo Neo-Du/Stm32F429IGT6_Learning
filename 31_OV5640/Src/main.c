@@ -135,14 +135,6 @@ static void MX_NVIC_Init (void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void jpeg_data_process (void)
-{
-    curline = yoffset;	//行数复位
-
-    LCD_SetCursor (0, 0);
-    LCD_WriteRAM_Prepare ();		//�???????始写入GRAM
-}
-
 void HAL_DCMI_FrameEventCallback (DCMI_HandleTypeDef*hdcmi)
 {
 //    jpeg_data_process (); 						//jpeg数据处理
@@ -170,7 +162,7 @@ void HAL_DCMI_VsyncEventCallback (DCMI_HandleTypeDef*hdcmi)
 
 void dcmi_rx_callback ()
 {
-    dma_callback ++;
+    dma_callback++;
 }
 
 /* USER CODE END 0 */
@@ -219,6 +211,23 @@ int main (void)
 
     HAL_GPIO_WritePin (LTDC_BL_GPIO_Port, LTDC_BL_Pin, 1);
 
+    for (int i = 0; i < 19200; i++)
+    {
+	pic_buf[1][i] = 0xFF0000;
+    }
+    for (int j = 0; j < 19200; j++)
+    {
+	pic_buf[0][j] = 0x43CD80;
+    }
+
+    while (1)
+    {
+	HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[1], (uint32_t) &aMemory0, 160, 120);
+	HAL_Delay (500);
+	HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[0], (uint32_t) &aMemory0, 160, 120);
+	HAL_Delay (500);
+    }
+
     OV5640_Init ();
 
     OV5640_RGB565_Mode ();
@@ -232,13 +241,12 @@ int main (void)
     OV5640_OutSize_Set (4, 0, 160, 120);
 
     __HAL_UNLOCK(&hdma_dcmi);
-    HAL_DMAEx_MultiBufferStart (&hdma_dcmi, (uint32_t) &hdcmi.Instance->DR, &pic_buf[0], &pic_buf[1], 160 * 120);		//�???启双缓冲
+    HAL_DMAEx_MultiBufferStart (&hdma_dcmi, (uint32_t) &hdcmi.Instance->DR, &pic_buf[0], &pic_buf[1], 160 * 120);		//
 
     __HAL_DMA_ENABLE(&hdcmi); //使能DMA
 
-    hdcmi.Instance->CR |= DCMI_CR_CAPTURE;
+    hdcmi.Instance->CR &= 0xFFFE;
     hdcmi.Instance->CR |= DCMI_CR_ENABLE;
-
 
     //    __HAL_DMA_ENABLE_IT(&hdma_dcmi,DMA_IT_TC);
     //HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, 0xC0000000, 160 * 120);
@@ -253,15 +261,14 @@ int main (void)
 
     while (1)
     {
-	if (vsync_callback == 1)
+	if (vsync_callback)
 	{
 	    if (hdma_dcmi.Instance->CR & (1 << 19))
-		HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[0], (uint32_t) &aMemory0, 160, 120);
-	    else
 		HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[1], (uint32_t) &aMemory0, 160, 120);
+	    else
+		HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[0], (uint32_t) &aMemory0, 160, 120);
 	    vsync_callback = 0;
 	}
-
     }
 //    dcmi_rx_callback = rgblcd_dcmi_rx_callback;          //RGB屏接收数据回调函�??????????
 //

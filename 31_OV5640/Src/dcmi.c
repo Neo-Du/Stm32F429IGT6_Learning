@@ -137,9 +137,9 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     __HAL_LINKDMA(dcmiHandle,DMA_Handle,hdma_dcmi);
 
   /* USER CODE BEGIN DCMI_MspInit 1 */
-    __HAL_DMA_ENABLE_IT(&hdma_dcmi,DMA_IT_TC);    //开启传输完成中断
-    HAL_NVIC_SetPriority(DMA2_Stream1_IRQn,0,0);        //DMA中断优先级
-    HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
+//    __HAL_DMA_ENABLE_IT(&hdma_dcmi,DMA_IT_TC);    //开启传输完成中断
+//    HAL_NVIC_SetPriority(DMA2_Stream1_IRQn,0,0);        //DMA中断优先级
+//    HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
   /* USER CODE END DCMI_MspInit 1 */
   }
 }
