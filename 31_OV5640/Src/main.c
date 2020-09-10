@@ -211,22 +211,24 @@ int main (void)
 
     HAL_GPIO_WritePin (LTDC_BL_GPIO_Port, LTDC_BL_Pin, 1);
 
-    for (int i = 0; i < 19200; i++)
-    {
-	pic_buf[1][i] = 0xFF0000;
-    }
-    for (int j = 0; j < 19200; j++)
-    {
-	pic_buf[0][j] = 0x43CD80;
-    }
-
-    while (1)
-    {
-	HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[1], (uint32_t) &aMemory0, 160, 120);
-	HAL_Delay (500);
-	HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[0], (uint32_t) &aMemory0, 160, 120);
-	HAL_Delay (500);
-    }
+//    for (int i = 0; i < 19200; i++)
+//    {
+//	pic_buf[1][i] = 0xFF0000;
+//    }
+//    for (int j = 0; j < 19200; j++)
+//    {
+//	pic_buf[0][j] = 0x43CD80;
+//    }
+//
+//    while (1)
+//    {
+//	HAL_DMA2D_Abort(&hdma2d);
+//	HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[1], (uint32_t) &aMemory0, 160, 120);
+//	HAL_Delay (500);
+//	HAL_DMA2D_Abort(&hdma2d);
+//	HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[0], (uint32_t) &aMemory0, 160, 120);
+//	HAL_Delay (500);
+//    }
 
     OV5640_Init ();
 
@@ -264,9 +266,15 @@ int main (void)
 	if (vsync_callback)
 	{
 	    if (hdma_dcmi.Instance->CR & (1 << 19))
+	    {
+		HAL_DMA2D_Abort(&hdma2d);
 		HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[1], (uint32_t) &aMemory0, 160, 120);
+	    }
 	    else
+	    {
+		HAL_DMA2D_Abort(&hdma2d);
 		HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[0], (uint32_t) &aMemory0, 160, 120);
+	    }
 	    vsync_callback = 0;
 	}
     }
