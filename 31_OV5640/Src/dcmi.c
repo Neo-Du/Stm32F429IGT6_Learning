@@ -80,14 +80,14 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     */
     GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_8;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
@@ -95,21 +95,21 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9 
                           |GPIO_PIN_11;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_3;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -136,9 +136,12 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
 
     __HAL_LINKDMA(dcmiHandle,DMA_Handle,hdma_dcmi);
 
+    /* DCMI interrupt Init */
+    HAL_NVIC_SetPriority(DCMI_IRQn, 2, 3);
+    HAL_NVIC_EnableIRQ(DCMI_IRQn);
   /* USER CODE BEGIN DCMI_MspInit 1 */
-//    __HAL_DMA_ENABLE_IT(&hdma_dcmi,DMA_IT_TC);    //开启传输完成中断
-//    HAL_NVIC_SetPriority(DMA2_Stream1_IRQn,0,0);        //DMA中断优先级
+//    __HAL_DMA_ENABLE_IT(&hdma_dcmi,DMA_IT_TC);    //�?启传输完成中�?
+//    HAL_NVIC_SetPriority(DMA2_Stream1_IRQn,0,0);        //DMA中断优先�?
 //    HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
   /* USER CODE END DCMI_MspInit 1 */
   }
