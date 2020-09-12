@@ -332,13 +332,20 @@ u8 OV5640_OutSize_Set (u16 offx,u16 offy,u16 width,u16 height)
 //    OV5640_WR_Reg (0x503d, 0x80);
 //    OV5640_WR_Reg (0x4741, 0x00);
 
-//50FPS
+
+//20FPS
     OV5640_WR_Reg (0x3035, 0x21);
-    OV5640_WR_Reg (0x3036, 0xAC);
+    OV5640_WR_Reg (0x3036, 0x45);
+//26FPS
+//    OV5640_WR_Reg (0x3035, 0x21);
+//    OV5640_WR_Reg (0x3036, 0x5a);
+
+//50FPS
+//    OV5640_WR_Reg (0x3035, 0x21);
+//    OV5640_WR_Reg (0x3036, 0xAC);
 //100FPS
 //    OV5640_WR_Reg (0x3035, 0x21);
 //    OV5640_WR_Reg (0x3036, 0x69);
-
 
     return 0;
 }

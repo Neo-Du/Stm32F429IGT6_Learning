@@ -40,7 +40,7 @@ void MX_LTDC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 void LCD_Init (void);
-
+void window_size_setting (uint16_t x0,uint16_t y0,uint16_t x1,uint16_t y1);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

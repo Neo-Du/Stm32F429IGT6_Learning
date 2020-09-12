@@ -199,7 +199,20 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef* ltdcHandle)
 } 
 
 /* USER CODE BEGIN 1 */
-
+void window_size_setting (uint16_t x0,uint16_t y0,uint16_t x1,uint16_t y1)
+{
+    LTDC_LayerCfgTypeDef pLayerCfg = { 0 };
+    pLayerCfg.WindowX0 = x0;
+    pLayerCfg.WindowX1 = x1;
+    pLayerCfg.WindowY0 = y0;
+    pLayerCfg.WindowY1 = y1;
+    pLayerCfg.ImageWidth = x1 - x0;
+    pLayerCfg.ImageHeight = y1 - y0;
+    if (HAL_LTDC_ConfigLayer (&hltdc, &pLayerCfg, 0) != HAL_OK)
+    {
+	Error_Handler ();
+    }
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
