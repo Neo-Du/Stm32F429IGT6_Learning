@@ -22,13 +22,13 @@
 
 /* USER CODE BEGIN 0 */
 
-//向SDRAM发送命令
-//bankx:0,向BANK5上面的SDRAM发送指令
-//      1,向BANK6上面的SDRAM发送指令
-//cmd:指令(0,正常模式/1,时钟配置使能/2,预充电所有存储区/3,自动刷新/4,加载模式寄存器/5,自刷新/6,掉电)
-//refresh:自刷新次数
+//向SDRAM发�?�命�??
+//bankx:0,向BANK5上面的SDRAM发�?�指�??
+//      1,向BANK6上面的SDRAM发�?�指�??
+//cmd:指令(0,正常模式/1,时钟配置使能/2,预充电所有存储区/3,自动刷新/4,加载模式寄存�??/5,自刷�??/6,掉电)
+//refresh:自刷新次�??
 //regval:模式寄存器的定义
-//返回值:0,正常;1,失败.
+//返回�??:0,正常;1,失败.
 uint8_t SDRAM_Send_Cmd (uint8_t bankx,uint8_t cmd,uint8_t refresh,uint16_t regval)
 {
     uint32_t target_bank = 0;
@@ -40,9 +40,9 @@ uint8_t SDRAM_Send_Cmd (uint8_t bankx,uint8_t cmd,uint8_t refresh,uint16_t regva
 	target_bank = FMC_SDRAM_CMD_TARGET_BANK2;
     Command.CommandMode = cmd;                //命令
     Command.CommandTarget = target_bank;      //目标SDRAM存储区域
-    Command.AutoRefreshNumber = refresh;      //自刷新次�??????
+    Command.AutoRefreshNumber = refresh;      //自刷新次�????????
     Command.ModeRegisterDefinition = regval;  //要写入模式寄存器的�??
-    if (HAL_SDRAM_SendCommand (&hsdram1, &Command, 0X1000) == HAL_OK) //向SDRAM发�?�命�??????
+    if (HAL_SDRAM_SendCommand (&hsdram1, &Command, 0X1000) == HAL_OK) //向SDRAM发�?�命�????????
     {
 	return 0;
     }
@@ -50,30 +50,30 @@ uint8_t SDRAM_Send_Cmd (uint8_t bankx,uint8_t cmd,uint8_t refresh,uint16_t regva
 	return 1;
 }
 
-//发�?�SDRAM初始化序�??????
+//发�?�SDRAM初始化序�????????
 void SDRAM_Initialization_Sequence (SDRAM_HandleTypeDef*hsdram)
 {
     uint32_t temp = 0;
     //SDRAM控制器初始化完成以后还需要按照如下顺序初始化SDRAM
     SDRAM_Send_Cmd (0, FMC_SDRAM_CMD_CLK_ENABLE, 1, 0); //时钟配置使能
     HAL_Delay (1);                                  //至少延时200us
-    SDRAM_Send_Cmd (0, FMC_SDRAM_CMD_PALL, 1, 0);       //对所有存储区预充�??????
-    SDRAM_Send_Cmd (0, FMC_SDRAM_CMD_AUTOREFRESH_MODE, 8, 0);       //设置自刷新次�??????
-    //配置模式寄存�??????,SDRAM的bit0~bit2为指定突发访问的长度�??????
-    //bit3为指定突发访问的类型，bit4~bit6为CAS值，bit7和bit8为运行模�??????
+    SDRAM_Send_Cmd (0, FMC_SDRAM_CMD_PALL, 1, 0);       //对所有存储区预充�????????
+    SDRAM_Send_Cmd (0, FMC_SDRAM_CMD_AUTOREFRESH_MODE, 8, 0);       //设置自刷新次�????????
+    //配置模式寄存�????????,SDRAM的bit0~bit2为指定突发访问的长度�????????
+    //bit3为指定突发访问的类型，bit4~bit6为CAS值，bit7和bit8为运行模�????????
     //bit9为指定的写突发模式，bit10和bit11位保留位
-    temp = (uint32_t) SDRAM_MODEREG_BURST_LENGTH_1 |	//设置突发长度:1(可以�??????1/2/4/8)
-	    SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL |	//设置突发类型:连续(可以是连�??????/交错)
-	    SDRAM_MODEREG_CAS_LATENCY_3 |	//设置CAS�??????:3(可以�??????2/3)
+    temp = (uint32_t) SDRAM_MODEREG_BURST_LENGTH_1 |	//设置突发长度:1(可以�????????1/2/4/8)
+	    SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL |	//设置突发类型:连续(可以是连�????????/交错)
+	    SDRAM_MODEREG_CAS_LATENCY_3 |	//设置CAS�????????:3(可以�????????2/3)
 	    SDRAM_MODEREG_OPERATING_MODE_STANDARD |   //设置操作模式:0,标准模式
-	    SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;     //设置突发写模�??????:1,单点访问
+	    SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;     //设置突发写模�????????:1,单点访问
     SDRAM_Send_Cmd (0, FMC_SDRAM_CMD_LOAD_MODE, 1, temp);   //设置SDRAM的模式寄存器
 }
 
-//在指定地�??????(WriteAddr+Bank5_SDRAM_ADDR)�??????�??????,连续写入n个字�??????.
+//在指定地�????????(WriteAddr+Bank5_SDRAM_ADDR)�????????�????????,连续写入n个字�????????.
 //pBuffer:字节指针
 //WriteAddr:要写入的地址
-//n:要写入的字节�??????
+//n:要写入的字节�????????
 void FMC_SDRAM_WriteBuffer (uint8_t*pBuffer,uint32_t WriteAddr,uint32_t n)
 {
     for (; n != 0; n--)
@@ -84,10 +84,10 @@ void FMC_SDRAM_WriteBuffer (uint8_t*pBuffer,uint32_t WriteAddr,uint32_t n)
     }
 }
 
-//在指定地�??????((WriteAddr+Bank5_SDRAM_ADDR))�??????�??????,连续读出n个字�??????.
+//在指定地�????????((WriteAddr+Bank5_SDRAM_ADDR))�????????�????????,连续读出n个字�????????.
 //pBuffer:字节指针
 //ReadAddr:要读出的起始地址
-//n:要写入的字节�??????
+//n:要写入的字节�????????
 void FMC_SDRAM_ReadBuffer (uint8_t*pBuffer,uint32_t ReadAddr,uint32_t n)
 {
     for (; n != 0; n--)
@@ -129,10 +129,10 @@ void MX_FMC_Init(void)
   hsdram1.Init.ReadPipeDelay = FMC_SDRAM_RPIPE_DELAY_1;
   /* SdramTiming */
   SdramTiming.LoadToActiveDelay = 2;
-  SdramTiming.ExitSelfRefreshDelay = 8;
-  SdramTiming.SelfRefreshTime = 6;
+  SdramTiming.ExitSelfRefreshDelay = 7;
+  SdramTiming.SelfRefreshTime = 4;
   SdramTiming.RowCycleDelay = 6;
-  SdramTiming.WriteRecoveryTime = 4;
+  SdramTiming.WriteRecoveryTime = 2;
   SdramTiming.RPDelay = 2;
   SdramTiming.RCDDelay = 2;
 

@@ -39,6 +39,8 @@
 
 #define SDRAM_BANK_ADDR     ((uint32_t)0XC0000000)
 #define WRITE_READ_ADDR     ((uint32_t)0x0800)
+#define SDRAM_SIZE 	8*1024*1024
+//#define SDRAM_BANK_ADDR 0xC0000000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,31 +52,29 @@
 
 /* USER CODE BEGIN PV */
 
-uint32_t aMemory[262144] __attribute__((section(".ExtRAMData")));
-uint32_t aMemory1[262144] __attribute__((section(".ExtRAMData1"))); // 1024 * 1024 /4    //1MB / 4
-
+uint32_t SDRAM_BUF[SDRAM_SIZE] __attribute__((section(".ExtRAMData2"))); // 1024 * 1024 /4    //1MB / 4
 
 /*
-#if (defined ( __CC_ARM ))
-U32 aMemory[GUI_NUMBYTES / 4] __attribute__((at(MEM_BASE)));
-#elif (defined (__ICCARM__))
-#pragma location = MEM_BASE
-__no_init U32 aMemory[GUI_NUMBYTES / 4];
-#elif defined ( __GNUC__ )
-U32 aMemory[GUI_NUMBYTES / 4] __attribute__((section(".ExtRAMData1")));
-#endif
+ #if (defined ( __CC_ARM ))
+ U32 aMemory[GUI_NUMBYTES / 4] __attribute__((at(MEM_BASE)));
+ #elif (defined (__ICCARM__))
+ #pragma location = MEM_BASE
+ __no_init U32 aMemory[GUI_NUMBYTES / 4];
+ #elif defined ( __GNUC__ )
+ U32 aMemory[GUI_NUMBYTES / 4] __attribute__((section(".ExtRAMData1")));
+ #endif
 
-__CC_ARM 	-->  U32 aMemory[GUI_NUMBYTES / 4] __attribute__((at(MEM_BASE)));
-__ICCARM__ 	-->  _no_init U32 aMemory[GUI_NUMBYTES / 4];
-__GNUC__ 	-->  aMemory[GUI_NUMBYTES / 4] __attribute__((section(".ExtRAMData1")));
+ __CC_ARM 	-->  U32 aMemory[GUI_NUMBYTES / 4] __attribute__((at(MEM_BASE)));
+ __ICCARM__ 	-->  _no_init U32 aMemory[GUI_NUMBYTES / 4];
+ __GNUC__ 	-->  aMemory[GUI_NUMBYTES / 4] __attribute__((section(".ExtRAMData1")));
 
-*/
-
+ */
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config (void);
+void speed_test ();
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -113,27 +113,41 @@ int main (void)
     /* Initialize all configured peripherals */
     MX_GPIO_Init ();
     MX_FMC_Init ();
-    SDRAM_Init ();
     /* USER CODE BEGIN 2 */
+    SDRAM_Init ();
     printf ("Start\r\n");
-    uint32_t ts = 0;
 
-    uint32_t i = 0;
-    uint32_t temp = 0;
-    uint32_t sval = 0;
+    HAL_GPIO_TogglePin (LED0_GPIO_Port, LED0_Pin);
+    HAL_Delay (100);
+    HAL_GPIO_TogglePin (LED0_GPIO_Port, LED0_Pin);
+    HAL_Delay (100);
+    HAL_GPIO_TogglePin (LED0_GPIO_Port, LED0_Pin);
+    HAL_Delay (100);
+    HAL_GPIO_TogglePin (LED0_GPIO_Port, LED0_Pin);
+    HAL_Delay (100);
+    HAL_GPIO_TogglePin (LED0_GPIO_Port, LED0_Pin);
+    HAL_Delay (100);
 
-    for (i = 0; i < 262144; i++)
-    {
-	aMemory[i] = i;
-	aMemory1[i] = i * 2;
-    }
+    speed_test ();
 
-    for (i = 0; i < 262144; i++)
-    {
-
-	temp = aMemory[i];
-	sval = aMemory1[i];
-    }
+//    uint32_t ts = 0;
+//
+//    uint32_t i = 0;
+//    uint32_t temp = 0;
+//    uint32_t sval = 0;
+//    aMemory2[1] = 0;
+//    for (i = 0; i < 262144; i++)
+//    {
+//	aMemory[i] = i;
+//	aMemory1[i] = i * 2;
+//    }
+//
+//    for (i = 0; i < 262144; i++)
+//    {
+//
+//	temp = aMemory[i];
+//	sval = aMemory1[i];
+//    }
 
 //    printf("start at %d \r\n",HAL_GetTick());
 //    for (i=0;i<8*1024*1024;i++)
@@ -227,6 +241,65 @@ int _write (int file,char*ptr,int len)
     return len;
 }
 
+void speed_test ()
+{
+    uint32_t counter = 0;
+    uint8_t ubReaddata_8b = 0;
+    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 1);
+    HAL_Delay (500);
+    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 0);
+    for (counter = 0x00; counter < SDRAM_SIZE; counter++)
+    {
+	*(__IO uint8_t*) (SDRAM_BANK_ADDR + counter) = (uint8_t) 0x0;
+    }
+    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 1);
+
+    HAL_Delay (500);
+    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 0);
+    for (counter = 0x00; counter < SDRAM_SIZE; counter++)
+    {
+	 ubReaddata_8b = *(__IO uint8_t *)(SDRAM_BANK_ADDR + counter);
+    }
+    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 1);
+
+    HAL_Delay (500);
+    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 0);
+    for (counter = 0x00; counter < SDRAM_SIZE; counter++)
+    {
+	ubReaddata_8b = 0x00;
+    }
+    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 1);
+
+
+//    for (counter = 0x00; counter < IS42S16400J_SIZE; counter++)
+//    {
+//	aMemory2[counter] = (uint8_t) 0x0;
+//    }
+//    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 1);
+//    HAL_Delay (500);
+//    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 0);
+//    for (counter = 0x00; counter < IS42S16400J_SIZE; counter++)
+//    {
+//	aMemory2[counter] = (uint32_t) 1;
+//    }
+//    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 1);
+//
+////    for (int32_t i = 0; i < 128000; i++)
+////    {
+////	test_array[i] = 1;
+////    }
+//    HAL_Delay (500);
+//    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 0);
+//    HAL_SDRAM_Write_32b (&hsdram1, aMemory2, test_array, 128000);
+//    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 1);
+//
+//
+//    HAL_Delay (500);
+//    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 0);
+//    HAL_SDRAM_Read_32b (&hsdram1, aMemory2, test_array1, 1024*25);
+//    HAL_GPIO_WritePin (LED0_GPIO_Port, LED0_Pin, 1);
+
+}
 /* USER CODE END 4 */
 
 /**

@@ -97,7 +97,7 @@ uint32_t buffer1[1200 * 800] __attribute__((section(".ExtRAMData1"))); // 1024 *
 
 //uint32_t line_buf[1024 * 4];
 
-uint32_t pic_buf[2][160 * 120];
+//uint32_t pic_buf[2][160 * 120];
 
 extern DCMI_HandleTypeDef hdcmi;
 extern DMA_HandleTypeDef hdma_dcmi;
@@ -135,8 +135,8 @@ uint32_t temp_check = 0;
 uint32_t t1, t2, t3;
 uint32_t i, j;
 
-int a = 320;
-int b = 240;
+int a = 160;
+int b = 120;
 
 /* USER CODE END PV */
 
@@ -282,7 +282,7 @@ int main(void)
     HAL_LTDC_SetWindowSize (&hltdc, a, b, 0);
     OV5640_OutSize_Set (4, 0, a, b);
     HAL_LTDC_SetAddress (&hltdc, &buffer0, 0);
-    HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, &buffer0, a * b / 2);
+    HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, &buffer0, a * b);
 
 //    while(1)
 //    {

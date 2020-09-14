@@ -45,7 +45,7 @@ extern SDRAM_HandleTypeDef hsdram1;
 #define SDRAM_MODEREG_WRITEBURST_MODE_PROGRAMMED ((uint16_t)0x0000)
 #define SDRAM_MODEREG_WRITEBURST_MODE_SINGLE     ((uint16_t)0x0200)
 
-#define Bank5_SDRAM_ADDR    ((uint32_t)(0XC0000000)) //SDRAM�??始地�??
+#define Bank5_SDRAM_ADDR    ((uint32_t)(0XC0000000)) //SDRAM�???始地�???
 /* USER CODE END Private defines */
 
 void MX_FMC_Init(void);
