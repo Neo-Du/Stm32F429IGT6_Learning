@@ -46,8 +46,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define SDRAM_BANK_ADDR     ((uint32_t)0XC0000000)
-#define jpeg_buf_size   30*1024*1024		//定义JPEG数据缓存jpeg_buf的大�??????????????(1*4M字节)
-#define jpeg_line_size	2*1024			//定义DMA接收数据�??????????????,�??????????????行数据的�??????????????大�??
+#define jpeg_buf_size   30*1024*1024		//定义JPEG数据缓存jpeg_buf的大�???????????????????????(1*4M字节)
+#define jpeg_line_size	2*1024			//定义DMA接收数据�???????????????????????,�???????????????????????行数据的�???????????????????????大�??
 
 typedef int32_t s32;
 typedef int16_t s16;
@@ -93,11 +93,11 @@ typedef __I uint8_t vuc8;
 /* USER CODE BEGIN PV */
 uint32_t buffer0[1200 * 800] __attribute__((section(".ExtRAMData"))); // 1024 * 1024 /4    //1MB / 4
 uint32_t buffer1[1200 * 800] __attribute__((section(".ExtRAMData1"))); // 1024 * 1024 /4    //1MB / 4
-//uint32_t dcmi_line_buf[2][jpeg_line_size];	//RGB屏时,摄像头采用一行一行读�??????????????,定义行缓�??????????????
+//uint32_t dcmi_line_buf[2][jpeg_line_size];	//RGB屏时,摄像头采用一行一行读�???????????????????????,定义行缓�???????????????????????
 
 //uint32_t line_buf[1024 * 4];
 
-//uint32_t pic_buf[2][160 * 120];
+uint32_t pic_buf[2][160 * 120];
 
 extern DCMI_HandleTypeDef hdcmi;
 extern DMA_HandleTypeDef hdma_dcmi;
@@ -111,7 +111,7 @@ typedef struct
 #define LCD_BASE        ((u32)(0x60000000 | 0x0007FFFE))
 #define LCD             ((LCD_TypeDef *) LCD_BASE)
 
-u16 curline = 0;							//摄像头输出数�???????????,当前行编�???????????
+u16 curline = 0;							//摄像头输出数�????????????????????,当前行编�????????????????????
 u16 yoffset = 0;							//y方向的偏移量
 
 volatile uint32_t temp2 = 0;
@@ -126,6 +126,7 @@ volatile uint32_t m2 = 0;
 
 volatile uint8_t flag = 0;
 volatile uint16_t rx_times = 1;
+volatile uint16_t line_rx_times = 0;
 
 uint32_t vsync_call = 0;
 uint32_t hsync_call = 0;
@@ -135,8 +136,8 @@ uint32_t temp_check = 0;
 uint32_t t1, t2, t3;
 uint32_t i, j;
 
-int a = 160;
-int b = 120;
+int a = 480;
+int b = 320;
 
 /* USER CODE END PV */
 
@@ -149,6 +150,34 @@ static void MX_NVIC_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void HAL_DCMI_LineEventCallback (DCMI_HandleTypeDef*hdcmi)
+{
+    HAL_GPIO_TogglePin (LED1_GPIO_Port, LED1_Pin);
+    line_rx_times++;
+    if (line_rx_times == b)
+    {
+	HAL_DCMI_Stop (hdcmi);
+	if (flag)
+	{
+	    hdma_dcmi.Instance->M0AR = &buffer1;
+	    HAL_LTDC_SetAddress (&hltdc, &buffer0, 0);
+	    HAL_DCMI_Start_DMA (hdcmi, DCMI_MODE_CONTINUOUS, &buffer1, a * b);
+
+	    flag = 0;
+	}
+	else
+	{
+	    hdma_dcmi.Instance->M0AR = &buffer0;
+	    HAL_LTDC_SetAddress (&hltdc, &buffer1, 0);
+	    HAL_DCMI_Start_DMA (hdcmi, DCMI_MODE_CONTINUOUS, &buffer0, a * b);
+
+	    flag = 1;
+	}
+	line_rx_times = 0;
+    }
+
+}
 void HAL_DCMI_VsyncEventCallback (DCMI_HandleTypeDef*hdcmi)
 {
     //m1++;
@@ -164,14 +193,16 @@ void HAL_DCMI_VsyncEventCallback (DCMI_HandleTypeDef*hdcmi)
 //	HAL_DMA2D_Start (&hdma2d, (uint32_t) &pic_buf[0], (uint32_t) &aMemory0, 160, 120);
 //    }
 }
+
 void dcmi_rx_callback ()
 {
     //HAL_DCMI_Stop (&hdcmi);
 
     rx_times++;
-
+    //HAL_GPIO_TogglePin (LED1_GPIO_Port, LED1_Pin);
 //    if (flag)
 //    {
+//	hdma_dcmi.Instance->M0AR = &buffer1 + (rx_times - 1) * a * b / 2;
 //	HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, &buffer1 + (rx_times - 1) * a * b / 2, a * b / 2);
 //	if (rx_times == 1)
 //	{
@@ -185,6 +216,7 @@ void dcmi_rx_callback ()
 //    }
 //    else
 //    {
+//	hdma_dcmi.Instance->M0AR = &buffer0 + (rx_times - 1) * a * b / 2;
 //	HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, &buffer0 + (rx_times - 1) * a * b / 2, a * b / 2);
 //	if (rx_times == 1)
 //	{
@@ -196,17 +228,21 @@ void dcmi_rx_callback ()
 //	    flag = 1;
 //	}
 //    }
+
 //    if (flag)
 //    {
+//	//hdma_dcmi.Instance->M0AR = &buffer1;
 //	HAL_LTDC_SetAddress (&hltdc, &buffer0, 0);
 //	HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, &buffer1, a * b);
-//
+////	HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, flag);
 //	flag = 0;
 //    }
 //    else
 //    {
+//	//hdma_dcmi.Instance->M0AR = &buffer0;
 //	HAL_LTDC_SetAddress (&hltdc, &buffer1, 0);
 //	HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, &buffer0, a * b);
+////	HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, flag);
 //	flag = 1;
 //    }
 }
@@ -261,36 +297,39 @@ int main(void)
 //
     for (int i = 0; i < 1024 * 600; i++)
     {
-	buffer0[i] = 0xFF0000;
+	buffer0[i] = 0xFF00FF;
     }
     for (int j = 0; j < 1024 * 600; j++)
     {
-	buffer1[j] = 0x00FF00;
+	buffer1[j] = 0xFF00FF;
     }
+
     OV5640_Init ();
 
     OV5640_RGB565_Mode ();
-//    OV5640_Focus_Init ();
-//    OV5640_Light_Mode (0);	//自动模式
-//    OV5640_Color_Saturation (3);	//色彩饱和
-//    OV5640_Brightness (4);	//亮度0
-//    OV5640_Contrast (3);		//对比
-//    OV5640_Sharpness (33);	//自动锐度
-//    OV5640_Focus_Constant ();	//启动持续对焦
-//app_160x120_camera_rolling ();
+    //OV5640_Focus_Init ();
+    OV5640_Light_Mode (0);	//自动模式
+    OV5640_Color_Saturation (3);	//色彩饱和
+    OV5640_Brightness (4);	//亮度0
+    OV5640_Contrast (3);		//对比
+    OV5640_Sharpness (33);	//自动锐度
+    //OV5640_Focus_Constant ();	//启动持续对焦
+
+    //app_160x120_camera_rolling ();
 
     HAL_LTDC_SetWindowSize (&hltdc, a, b, 0);
-    OV5640_OutSize_Set (4, 0, a, b);
+    OV5640_OutSize_Set (0, 0, a, b);
     HAL_LTDC_SetAddress (&hltdc, &buffer0, 0);
-    HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, &buffer0, a * b);
-
-//    while(1)
-//    {
+    HAL_DCMI_Start_DMA (&hdcmi, DCMI_MODE_CONTINUOUS, &buffer1, a * b);
+    while (1)
+    {
 //	HAL_Delay (1000);
 //	HAL_LTDC_SetAddress (&hltdc, &buffer1, 0);
+//	HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
 //	HAL_Delay (1000);
 //	HAL_LTDC_SetAddress (&hltdc, &buffer0, 0);
-//    }
+//	HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
+    }
 
   /* USER CODE END 2 */
 
@@ -381,19 +420,19 @@ static void MX_NVIC_Init(void)
 //{
 //    HAL_DCMI_IRQHandler (&hdma_dcmi);
 //}
-//DMA2数据�??????????????1中断服务函数
+//DMA2数据�???????????????????????1中断服务函数
 //void DMA2_Stream1_IRQHandler (void)
 //{
 //    if (__HAL_DMA_GET_FLAG(&hdma_dcmi,DMA_FLAG_TCIF1_5) != RESET)          //DMA传输完成
 //    {
-//	__HAL_DMA_CLEAR_FLAG(&hdma_dcmi, DMA_FLAG_TCIF1_5);          //清除DMA传输完成中断标志�??????????????
-//	dcmi_rx_callback ();	//执行摄像头接收回调函�??????????????,读取数据等操作在这里面处�??????????????
+//	__HAL_DMA_CLEAR_FLAG(&hdma_dcmi, DMA_FLAG_TCIF1_5);          //清除DMA传输完成中断标志�???????????????????????
+//	dcmi_rx_callback ();	//执行摄像头接收回调函�???????????????????????,读取数据等操作在这里面处�???????????????????????
 //    }
 //}
 void app_160x120_camera_rolling ()
 {
 
-    HAL_LTDC_SetWindowSize (&hltdc, 160, 120, 0);
+    //HAL_LTDC_SetWindowSize (&hltdc, 160, 120, 0);
 
     OV5640_OutSize_Set (4, 0, 160, 120);
 
@@ -402,7 +441,7 @@ void app_160x120_camera_rolling ()
     __HAL_DCMI_ENABLE(&hdcmi);
     hdcmi.Instance->CR &= ~(DCMI_CR_CM);
     hdcmi.Instance->CR |= (uint32_t) (DCMI_MODE_CONTINUOUS);
-    HAL_DMAEx_MultiBufferStart (hdcmi.DMA_Handle, (uint32_t) &hdcmi.Instance->DR, &pic_buf[0], &pic_buf[1], 160 * 120);		//
+    HAL_DMAEx_MultiBufferStart (hdcmi.DMA_Handle, (uint32_t) &hdcmi.Instance->DR, &buffer0, &buffer1, 160 * 120);		//
 
     hdcmi.Instance->CR |= DCMI_CR_CAPTURE;
     __HAL_UNLOCK(&hdcmi);
@@ -436,7 +475,7 @@ void app_large_image ()
     __HAL_DCMI_ENABLE(&hdcmi);
     hdcmi.Instance->CR &= ~(DCMI_CR_CM);
     hdcmi.Instance->CR |= (uint32_t) (DCMI_MODE_CONTINUOUS);
-    HAL_DMAEx_MultiBufferStart (hdcmi.DMA_Handle, (uint32_t) &hdcmi.Instance->DR, &pic_buf[0], &pic_buf[1], 160 * 120);		//
+    HAL_DMAEx_MultiBufferStart (hdcmi.DMA_Handle, (uint32_t) &hdcmi.Instance->DR, &buffer0[0], &buffer0[1], 160 * 120);		//
     hdcmi.Instance->CR |= DCMI_CR_CAPTURE;
     __HAL_UNLOCK(&hdcmi);
 
