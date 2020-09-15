@@ -337,8 +337,8 @@ u8 OV5640_OutSize_Set (u16 offx,u16 offy,u16 width,u16 height)
 //    OV5640_WR_Reg (0x3035, 0x21);
 //    OV5640_WR_Reg (0x3036, 0x45);
 //26FPS
-//    OV5640_WR_Reg (0x3035, 0x21);
-//    OV5640_WR_Reg (0x3036, 0x5a);
+    OV5640_WR_Reg (0x3035, 0x21);
+    OV5640_WR_Reg (0x3036, 0x5a);
 
 //50FPS
 //    OV5640_WR_Reg (0x3035, 0x21);
