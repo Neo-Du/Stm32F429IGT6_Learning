@@ -152,13 +152,45 @@ static void MX_NVIC_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void DCMI_STOP(DCMI_HandleTypeDef*hdcmi)
+{
+    HAL_StatusTypeDef status = HAL_OK;
+
+    /* Process locked */
+    __HAL_LOCK(hdcmi);
+
+    /* Lock the DCMI peripheral state */
+    hdcmi->State = HAL_DCMI_STATE_BUSY;
+
+    /* Disable Capture */
+    hdcmi->Instance->CR &= ~(DCMI_CR_CAPTURE);
+
+    while((hdcmi->Instance->CR & DCMI_CR_CAPTURE) != 0U);
+
+    /* Disable the DCMI */
+    __HAL_DCMI_DISABLE(hdcmi);
+
+    /* Disable the DMA */
+    HAL_DMA_Abort(hdcmi->DMA_Handle);
+
+    /* Update error code */
+    hdcmi->ErrorCode |= HAL_DCMI_ERROR_NONE;
+
+    /* Change DCMI state */
+    hdcmi->State = HAL_DCMI_STATE_READY;
+
+    /* Process Unlocked */
+    __HAL_UNLOCK(hdcmi);
+
+}
+
 void HAL_DCMI_LineEventCallback (DCMI_HandleTypeDef*hdcmi)
 {
     HAL_GPIO_TogglePin (LED1_GPIO_Port, LED1_Pin);
     line_rx_times++;
     if (line_rx_times == b)
     {
-	HAL_DCMI_Stop (hdcmi);
+	DCMI_STOP (hdcmi);
 	if (flag)
 	{
 	    hdma_dcmi.Instance->M0AR = &buffer1;
