@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -29,7 +30,17 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif
+PUTCHAR_PROTOTYPE
+{
+    while ((USART1->SR & 0X40) == 0);
+    USART1->DR = (uint8_t) ch;
+    return ch;
+}
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -88,6 +99,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   printf("Start\r\n");
   /* USER CODE END 2 */
@@ -154,13 +166,13 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 
-int _write(int file, char *ptr, int len) {
-	int DataIdx;
-	for (DataIdx = 0; DataIdx < len; DataIdx++) {
-		ITM_SendChar(*ptr++);
-	}
-	return len;
-}
+//int _write(int file, char *ptr, int len) {
+//	int DataIdx;
+//	for (DataIdx = 0; DataIdx < len; DataIdx++) {
+//		ITM_SendChar(*ptr++);
+//	}
+//	return len;
+//}
 
 
 /* USER CODE END 4 */
