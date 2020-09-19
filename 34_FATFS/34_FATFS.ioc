@@ -1,7 +1,8 @@
 #MicroXplorer Configuration settings - do not modify
 FATFS.BSP.number=1
-FATFS.IPParameters=_CODE_PAGE,_USE_LFN
+FATFS.IPParameters=_CODE_PAGE,_USE_LFN,_FS_LOCK
 FATFS._CODE_PAGE=936
+FATFS._FS_LOCK=5
 FATFS._USE_LFN=2
 FATFS0.BSP.STBoard=false
 FATFS0.BSP.api=Unknown
