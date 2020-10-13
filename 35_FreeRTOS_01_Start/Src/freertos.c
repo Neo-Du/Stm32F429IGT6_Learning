@@ -25,7 +25,7 @@
 #include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
+/* USER CODE BEGIN Includes */     
 
 /* USER CODE END Includes */
 
@@ -57,14 +57,14 @@ osThreadId LED1Handle;
 
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask (void const*argument);
-void StartTask02 (void const*argument);
-void StartTask03 (void const*argument);
+void StartDefaultTask(void const * argument);
+void StartTask02(void const * argument);
+void StartTask03(void const * argument);
 
-void MX_FREERTOS_Init (void); /* (MISRA C 2004 rule 8.1) */
+void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
-void vApplicationGetIdleTaskMemory (StaticTask_t**ppxIdleTaskTCBBuffer,StackType_t**ppxIdleTaskStackBuffer,uint32_t*pulIdleTaskStackSize);
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
 
 /* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
 static StaticTask_t xIdleTaskTCBBuffer;
@@ -80,48 +80,47 @@ void vApplicationGetIdleTaskMemory (StaticTask_t**ppxIdleTaskTCBBuffer,StackType
 /* USER CODE END GET_IDLE_TASK_MEMORY */
 
 /**
- * @brief  FreeRTOS initialization
- * @param  None
- * @retval None
- */
-void MX_FREERTOS_Init (void)
-{
-    /* USER CODE BEGIN Init */
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
+void MX_FREERTOS_Init(void) {
+  /* USER CODE BEGIN Init */
 
-    /* USER CODE END Init */
+  /* USER CODE END Init */
 
-    /* USER CODE BEGIN RTOS_MUTEX */
+  /* USER CODE BEGIN RTOS_MUTEX */
     /* add mutexes, ... */
-    /* USER CODE END RTOS_MUTEX */
+  /* USER CODE END RTOS_MUTEX */
 
-    /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
     /* add semaphores, ... */
-    /* USER CODE END RTOS_SEMAPHORES */
+  /* USER CODE END RTOS_SEMAPHORES */
 
-    /* USER CODE BEGIN RTOS_TIMERS */
+  /* USER CODE BEGIN RTOS_TIMERS */
     /* start timers, add new ones, ... */
-    /* USER CODE END RTOS_TIMERS */
+  /* USER CODE END RTOS_TIMERS */
 
-    /* USER CODE BEGIN RTOS_QUEUES */
+  /* USER CODE BEGIN RTOS_QUEUES */
     /* add queues, ... */
-    /* USER CODE END RTOS_QUEUES */
+  /* USER CODE END RTOS_QUEUES */
 
-    /* Create the thread(s) */
-    /* definition and creation of defaultTask */
-    osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-    defaultTaskHandle = osThreadCreate (osThread(defaultTask), NULL);
+  /* Create the thread(s) */
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-    /* definition and creation of LED0 */
-    osThreadDef(LED0, StartTask02, osPriorityNormal, 0, 128);
-    LED0Handle = osThreadCreate (osThread(LED0), NULL);
+  /* definition and creation of LED0 */
+  osThreadDef(LED0, StartTask02, osPriorityNormal, 0, 128);
+  LED0Handle = osThreadCreate(osThread(LED0), NULL);
 
-    /* definition and creation of LED1 */
-    osThreadDef(LED1, StartTask03, osPriorityIdle, 0, 128);
-    LED1Handle = osThreadCreate (osThread(LED1), NULL);
+  /* definition and creation of LED1 */
+  osThreadDef(LED1, StartTask03, osPriorityIdle, 0, 128);
+  LED1Handle = osThreadCreate(osThread(LED1), NULL);
 
-    /* USER CODE BEGIN RTOS_THREADS */
+  /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
-    /* USER CODE END RTOS_THREADS */
+  /* USER CODE END RTOS_THREADS */
 
 }
 
@@ -132,16 +131,16 @@ void MX_FREERTOS_Init (void)
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask (void const*argument)
+void StartDefaultTask(void const * argument)
 {
-    /* USER CODE BEGIN StartDefaultTask */
+  /* USER CODE BEGIN StartDefaultTask */
     /* Infinite loop */
     for (;;)
     {
 	printf ("test001\r\n");
 	osDelay (1000);
     }
-    /* USER CODE END StartDefaultTask */
+  /* USER CODE END StartDefaultTask */
 }
 
 /* USER CODE BEGIN Header_StartTask02 */
@@ -151,16 +150,16 @@ void StartDefaultTask (void const*argument)
  * @retval None
  */
 /* USER CODE END Header_StartTask02 */
-void StartTask02 (void const*argument)
+void StartTask02(void const * argument)
 {
-    /* USER CODE BEGIN StartTask02 */
+  /* USER CODE BEGIN StartTask02 */
     /* Infinite loop */
     for (;;)
     {
 	HAL_GPIO_TogglePin (GPIOB, GPIO_PIN_0);
 	osDelay (100);
     }
-    /* USER CODE END StartTask02 */
+  /* USER CODE END StartTask02 */
 }
 
 /* USER CODE BEGIN Header_StartTask03 */
@@ -170,16 +169,16 @@ void StartTask02 (void const*argument)
  * @retval None
  */
 /* USER CODE END Header_StartTask03 */
-void StartTask03 (void const*argument)
+void StartTask03(void const * argument)
 {
-    /* USER CODE BEGIN StartTask03 */
+  /* USER CODE BEGIN StartTask03 */
     /* Infinite loop */
     for (;;)
     {
 	HAL_GPIO_TogglePin (GPIOB, GPIO_PIN_1);
 	osDelay (50);
     }
-    /* USER CODE END StartTask03 */
+  /* USER CODE END StartTask03 */
 }
 
 /* Private application code --------------------------------------------------*/
