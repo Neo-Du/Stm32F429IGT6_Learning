@@ -47,6 +47,11 @@ PUTCHAR_PROTOTYPE
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define NAND_PAGE_SIZE 2048
+#define BUF_PAGE_NUM 10
+#define TOTAL_PAGE_NUM 1080
+#define TOTAL_BLOCK_NUM 18
+#define PAGE_NUM_IN_BLOCK 60
+#define IMG_WIDTH 240
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -61,6 +66,17 @@ extern NAND_HandleTypeDef hnand2;
 NAND_IDTypeDef id;
 NAND_AddressTypeDef temp;
 uint8_t buf[NAND_PAGE_SIZE];
+
+uint32_t add_buf[4][512] = { 0 };
+
+uint16_t pos[12][2] = { { 15, 14 }, { 265, 14 }, { 517, 14 }, { 769, 14 }, { 15, 209 }, { 265, 209 }, { 517, 209 }, { 769, 209 }, { 15, 404 }, { 265, 404 }, { 517, 404 }, { 769, 404 } };
+
+uint32_t page_buf_1[40][12] = { 0 };
+uint32_t page_buf_2[40][12] = { 0 };
+
+uint32_t page_buf_3[512] = { 0 };
+
+uint32_t page_buf_4[20][512] = { 0 };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -109,46 +125,211 @@ int main (void)
 
     temp.Plane = 0;
     temp.Block = 0;
-    temp.Page = 1;
-
+    temp.Page = 0;
+    uint32_t error = 0;
     int i = 0;
+    int j = 0;
+    int t = 0;
+    uint32_t n = 0;
+    uint32_t m = 0;
+    uint32_t x1 = 0;
+    uint32_t y1 = 0;
+    uint32_t temp_time = 0;
+    uint32_t temp_time2 = 0;
+    uint32_t write_time = 0;
+    uint32_t read_time = 0;
+    uint32_t erase_time = 0;
     // 1、复位NAND芯片，读取芯片ID
     HAL_NAND_Reset (&hnand2);
-    HAL_Delay(500);
+    HAL_Delay (500);
     HAL_NAND_Read_ID (&hnand2, &id);
     printf ("1.HAL_id = 0x%X\r\n", *((unsigned int*) &id));
 
-    // 2、擦除第0页所在的第0块的数据，并打印HAL_NAND_Erase_Block函数执行结果
-    printf ("3.HAL_NAND_Erase_Block = %d\r\n", HAL_NAND_Erase_Block (&hnand2, &temp));
+//    printf ("3.HAL_NAND_Erase_Block = %d\r\n", HAL_NAND_Erase_Block (&hnand2, &temp));
+//    HAL_Delay (100);
+//    //wirte
+//    for (i = 0; i < 480; i++)
+//    {
+//	page_buf_3[i] = i;
+//    }
+//    HAL_NAND_Write_Page_8b (&hnand2, &temp,page_buf_3, 1);
+//    HAL_Delay (100);
+//    //read
+//    HAL_NAND_Read_Page_8b (&hnand2, &temp,page_buf_4, 1);
+//    HAL_Delay (100);
+//    //check
+//
+//    while (1);
 
-    // 3、读取在芯片第0页的数据，并打印HAL_NAND_Read_Page_8b函数执行结果
-    memset (buf, 0, NAND_PAGE_SIZE);
-    printf ("2.HAL_NAND_Read_Page_8b = %d\r\n", HAL_NAND_Read_Page_8b (&hnand2, &temp, buf, 1));
-    for (i = 0; i < NAND_PAGE_SIZE; i++)
+//    temp.Block = 1;
+//    printf ("4.HAL_NAND_Erase_Block = %d\r\n", HAL_NAND_Erase_Block (&hnand2, &temp));
+/////////////////////////////////////////////////////////////////////////
+//    int x1 = 0;
+//    int y1 = 0;
+//    int32_t add_buf = 0;
+//    int t = 0;
+//    int j = 0;
+//    uint32_t page_buf[256] = {0};
+//    while (t++ < 43200)
+//    {
+//	x1 = t % 240;
+//	y1 = t / 240;
+//	for (j = 0; j < 12; j++)
+//	{
+//	    add_buf = pos[j][0] + x1 + 1024 * (pos[j][1] + y1);
+//
+//	}
+//
+//    }
+/////////////////////////////////////////////////////////////////////////
+    temp.Plane = 0;
+    temp.Block = 0;
+    temp.Page = 0;
+    erase_time = HAL_GetTick();
+    //erase block
+    for (uint8_t block_temp = 0; block_temp < TOTAL_BLOCK_NUM; block_temp++)
     {
-	if ((i % 5) == 0)
-	    printf ("\r\n");
-	printf ("buf[%04d] = 0x%02X ", i, buf[i]);
+	temp.Block = block_temp;
+	HAL_NAND_Erase_Block (&hnand2, &temp);
     }
-    printf ("\r\n");
+    temp_time = HAL_GetTick() ;
+    erase_time = temp_time - erase_time;
+    //write block
+    for (i = 0; i < TOTAL_PAGE_NUM; i++)
+    {
+	for (j = 0; j < 40; j++)
+	{
+	    for (t = 0; t < 12; t++)
+	    {
+		x1 = n % IMG_WIDTH;
+		y1 = n / IMG_WIDTH;
+		page_buf_1[j][t] = pos[t][0] + x1 + 1024 * (pos[t][1] + y1);
+		n++;
+	    }
+	}
+	temp.Block = i / 64;
+	temp.Page = i % 64;
+	temp.Plane = 0;
+	HAL_NAND_Write_Page_8b (&hnand2, &temp, page_buf_1, 1);
+    }
+    temp_time2 = HAL_GetTick() ;
+    write_time = temp_time2 - temp_time;
 
-    // 4、初始化数据，把新的数据写入芯片第0页，并打印HAL_NAND_Write_Page_8b函数执行结果
-    for (i = 0; i < NAND_PAGE_SIZE; i++)
-    {
-	buf[i] = i & 0x00FF;
-    }
-    printf ("4.HAL_NAND_Write_Page_8b = %d\r\n", HAL_NAND_Write_Page_8b (&hnand2, &temp, buf, 1));
+    //read and check block
+    n = 0;
 
-    // 5、重新读取芯片第0页数据，并打印HAL_NAND_Read_Page_8b函数执行结果
-    memset (buf, 0, NAND_PAGE_SIZE);
-    printf ("5.HAL_NAND_Read_Page_8b = %d\r\n", HAL_NAND_Read_Page_8b (&hnand2, &temp, buf, 1));
-    for (i = 0; i < NAND_PAGE_SIZE; i++)
+    for (i = 0; i < 54; i++)
     {
-	if ((i % 5) == 0)
-	    printf ("\r\n");
-	printf ("buf[%04d] = 0x%02X ", i, buf[i]);
+//	for (j = 0; j < 40; j++)
+//	{
+//	    for (t = 0; t < 12; t++)
+//	    {
+//		x1 = n % IMG_WIDTH;
+//		y1 = n / IMG_WIDTH;
+//		page_buf_3[j * 12 + t] = pos[t][0] + x1 + 1024 * (pos[t][1] + y1);
+//
+//		n++;
+//	    }
+//	}
+//	temp.Block = i / 64;
+//	temp.Page = i % 64;
+//	temp.Plane = 0;
+	HAL_NAND_Read_Page_8b (&hnand2, &temp, page_buf_4, 20);
+	m = 0;
+//	while (1)
+//	{
+//	    if (page_buf_3[m] != page_buf_4[m])
+//	    {
+//		error++;
+//	    }
+//
+//	    if (m >= 505)
+//	    {
+//		if (error != 0)
+//		{
+//		    printf ("Page: %d \t error= %d \r\n", i, error);
+//		    error = 0;
+//		}
+//		break;
+//	    }
+//	    m++;
+//	}
+
     }
-    printf ("\r\n"); /* USER CODE END 2 */
+    temp_time = HAL_GetTick() ;
+    read_time = temp_time - temp_time2;
+    printf ("Done , error= %d \r\n", error);
+    printf ("erase_time : %d  \r\n", erase_time);
+    printf ("write_time : %d  \r\n", write_time);
+    printf ("read_time : %d  \r\n", read_time);
+
+    while (1);
+//    for (int t = 0; t < 512 - 26; t++)
+//    {
+//	add_buf[0][t] = t;
+//    }
+//    HAL_NAND_Write_Page_8b (&hnand2, &temp, add_buf[0], 1);
+//
+//    uint32_t time = HAL_GetTick ();
+//    HAL_NAND_Read_Page_8b (&hnand2, &temp, add_buf[1], 1);
+//    printf ("%d\r\n", HAL_GetTick () - time);
+//
+//    int x1 = 0;
+//    int y1 = 0;
+//    int n = 0;
+//
+//    while (t++ < 43200)
+//    {
+//
+//	aMemory2[] = img_buf[t];
+//	aMemory2[pos[1][0] + x1 + 1024 * (pos[1][1] + y1)] = img_buf[t];
+//	aMemory2[pos[2][0] + x1 + 1024 * (pos[2][1] + y1)] = img_buf[t];
+//	aMemory2[pos[3][0] + x1 + 1024 * (pos[3][1] + y1)] = img_buf[t];
+//	aMemory2[pos[4][0] + x1 + 1024 * (pos[4][1] + y1)] = img_buf[t];
+//	aMemory2[pos[5][0] + x1 + 1024 * (pos[5][1] + y1)] = img_buf[t];
+//	aMemory2[pos[6][0] + x1 + 1024 * (pos[6][1] + y1)] = img_buf[t];
+//	aMemory2[pos[7][0] + x1 + 1024 * (pos[7][1] + y1)] = img_buf[t];
+//	aMemory2[pos[8][0] + x1 + 1024 * (pos[8][1] + y1)] = img_buf[t];
+//	aMemory2[pos[9][0] + x1 + 1024 * (pos[9][1] + y1)] = img_buf[t];
+//	aMemory2[pos[10][0] + x1 + 1024 * (pos[10][1] + y1)] = img_buf[t];
+//	aMemory2[pos[11][0] + x1 + 1024 * (pos[11][1] + y1)] = img_buf[t];
+//    }
+//
+//    while (1);
+//    printf ("%d\r\n", HAL_GetTick () - time);
+//
+//    while (1);
+//    // 2、擦除第0页所在的�???0块的数据，并打印HAL_NAND_Erase_Block函数执行结果
+//    printf ("3.HAL_NAND_Erase_Block = %d\r\n", HAL_NAND_Erase_Block (&hnand2, &temp));
+//
+//    // 3、读取在芯片�???0页的数据，并打印HAL_NAND_Read_Page_8b函数执行结果
+//    memset (buf, 0, NAND_PAGE_SIZE);
+//    printf ("2.HAL_NAND_Read_Page_8b = %d\r\n", HAL_NAND_Read_Page_8b (&hnand2, &temp, buf, 1));
+//    for (i = 0; i < NAND_PAGE_SIZE; i++)
+//    {
+//	if ((i % 5) == 0)
+//	    printf ("\r\n");
+//	printf ("buf[%04d] = 0x%02X ", i, buf[i]);
+//    }
+//    printf ("\r\n");
+//
+//    // 4、初始化数据，把新的数据写入芯片�???0页，并打印HAL_NAND_Write_Page_8b函数执行结果
+//    for (i = 0; i < NAND_PAGE_SIZE; i++)
+//    {
+//	buf[i] = i & 0x00FF;
+//    }
+//    printf ("4.HAL_NAND_Write_Page_8b = %d\r\n", HAL_NAND_Write_Page_8b (&hnand2, &temp, buf, 1));
+//
+//    // 5、重新读取芯片第0页数据，并打印HAL_NAND_Read_Page_8b函数执行结果
+//    memset (buf, 0, NAND_PAGE_SIZE);
+//    printf ("5.HAL_NAND_Read_Page_8b = %d\r\n", HAL_NAND_Read_Page_8b (&hnand2, &temp, buf, 1));
+//    for (i = 0; i < NAND_PAGE_SIZE; i++)
+//    {
+//	if ((i % 5) == 0)
+//	    printf ("\r\n");
+//	printf ("buf[%04d] = 0x%02X ", i, buf[i]);
+//    }
+    /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */

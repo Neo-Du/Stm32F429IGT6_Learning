@@ -47,9 +47,9 @@ void MX_FMC_Init(void)
   hnand2.Config.PageSize = 2048;
   hnand2.Config.SpareAreaSize = 64;
   hnand2.Config.BlockSize = 64;
-  hnand2.Config.BlockNbr = 2048;
+  hnand2.Config.BlockNbr = 4096;
   hnand2.Config.PlaneNbr = 2;
-  hnand2.Config.PlaneSize = 4096;
+  hnand2.Config.PlaneSize = 2048;
   hnand2.Config.ExtraCommandEnable = DISABLE;
   /* ComSpaceTiming */
   ComSpaceTiming.SetupTime = 1;
@@ -80,6 +80,7 @@ static void HAL_FMC_MspInit(void){
     return;
   }
   FMC_Initialized = 1;
+
   /* Peripheral clock enable */
   __HAL_RCC_FMC_CLK_ENABLE();
   
