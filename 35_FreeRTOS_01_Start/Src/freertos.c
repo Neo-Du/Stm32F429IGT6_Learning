@@ -51,6 +51,7 @@
 osThreadId defaultTaskHandle;
 osThreadId LED0Handle;
 osThreadId LED1Handle;
+osThreadId Start_taskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -60,6 +61,7 @@ osThreadId LED1Handle;
 void StartDefaultTask(void const * argument);
 void StartTask02(void const * argument);
 void StartTask03(void const * argument);
+void StartTask_03(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -118,6 +120,10 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(LED1, StartTask03, osPriorityIdle, 0, 128);
   LED1Handle = osThreadCreate(osThread(LED1), NULL);
 
+  /* definition and creation of Start_task */
+  osThreadDef(Start_task, StartTask_03, osPriorityIdle, 0, 256);
+  Start_taskHandle = osThreadCreate(osThread(Start_task), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -137,7 +143,7 @@ void StartDefaultTask(void const * argument)
     /* Infinite loop */
     for (;;)
     {
-	printf ("test001\r\n");
+	//printf ("test001\r\n");
 	osDelay (1000);
     }
   /* USER CODE END StartDefaultTask */
@@ -179,6 +185,24 @@ void StartTask03(void const * argument)
 	osDelay (50);
     }
   /* USER CODE END StartTask03 */
+}
+
+/* USER CODE BEGIN Header_StartTask_03 */
+/**
+* @brief Function implementing the Start_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask_03 */
+void StartTask_03(void const * argument)
+{
+  /* USER CODE BEGIN StartTask_03 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTask_03 */
 }
 
 /* Private application code --------------------------------------------------*/
