@@ -36,7 +36,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-static uint32_t fac_us=0;							//us延时倍乘�?
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,40 +48,19 @@ static uint32_t fac_us=0;							//us延时倍乘�?
 
 /* USER CODE END Variables */
 osThreadId Name_Start_TaskHandle;
+osThreadId myTask02Handle;
+osThreadId myTask03Handle;
+osThreadId myTask04Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void delay_us (uint32_t nus)
-{
-    uint32_t ticks;
-    uint32_t told, tnow, tcnt = 0;
-    uint32_t reload = SysTick->LOAD;				//LOAD的�??
-    ticks = nus * fac_us; 						//�?要的节拍�?
-    told = SysTick->VAL;        				//刚进入时的计数器�?
-    while (1)
-    {
-	tnow = SysTick->VAL;
-	if (tnow != told)
-	{
-	    if (tnow < told)
-		tcnt += told - tnow;	//这里注意�?下SYSTICK是一个�?�减的计数器就可以了.
-	    else
-		tcnt += reload - tnow + told;
-	    told = tnow;
-	    if (tcnt >= ticks)
-		break;			//时间超过/等于要延迟的时间,则�??�?.
-	}
-    };
-}
-void delay_xms (uint32_t nms)
-{
-    uint32_t i;
-    for (i = 0; i < nms; i++)
-	delay_us (1000);
-}
+
 /* USER CODE END FunctionPrototypes */
 
 void Start_Task(void const * argument);
+void StartTask02(void const * argument);
+void StartTask03(void const * argument);
+void StartTask04(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -133,6 +111,18 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(Name_Start_Task, Start_Task, osPriorityNormal, 0, 128);
   Name_Start_TaskHandle = osThreadCreate(osThread(Name_Start_Task), NULL);
 
+  /* definition and creation of myTask02 */
+  osThreadDef(myTask02, StartTask02, osPriorityIdle, 0, 256);
+  myTask02Handle = osThreadCreate(osThread(myTask02), NULL);
+
+  /* definition and creation of myTask03 */
+  osThreadDef(myTask03, StartTask03, osPriorityIdle, 0, 256);
+  myTask03Handle = osThreadCreate(osThread(myTask03), NULL);
+
+  /* definition and creation of myTask04 */
+  osThreadDef(myTask04, StartTask04, osPriorityRealtime, 0, 256);
+  myTask04Handle = osThreadCreate(osThread(myTask04), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -141,20 +131,83 @@ void MX_FREERTOS_Init(void) {
 
 /* USER CODE BEGIN Header_Start_Task */
 /**
-  * @brief  Function implementing the Name_Start_Task thread.
-  * @param  argument: Not used 
-  * @retval None
-  */
+ * @brief  Function implementing the Name_Start_Task thread.
+ * @param  argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_Start_Task */
 void Start_Task(void const * argument)
 {
   /* USER CODE BEGIN Start_Task */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+    for (;;)
+    {
+	printf ("Task_01\r\n");
+	osDelay (100);
+    }
   /* USER CODE END Start_Task */
+}
+
+/* USER CODE BEGIN Header_StartTask02 */
+/**
+ * @brief Function implementing the myTask02 thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartTask02 */
+void StartTask02(void const * argument)
+{
+  /* USER CODE BEGIN StartTask02 */
+    uint32_t i = 10;
+    while (i--)
+    {
+	printf ("Task_02\r\n");
+	osDelay (200);
+    }
+    vTaskDelete (myTask02Handle);
+  /* USER CODE END StartTask02 */
+}
+
+/* USER CODE BEGIN Header_StartTask03 */
+/**
+ * @brief Function implementing the myTask03 thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartTask03 */
+void StartTask03(void const * argument)
+{
+  /* USER CODE BEGIN StartTask03 */
+    /* Infinite loop */
+    for (;;)
+    {
+	printf ("Task_03\r\n");
+	osDelay (100);
+    }
+  /* USER CODE END StartTask03 */
+}
+
+/* USER CODE BEGIN Header_StartTask04 */
+/**
+ * @brief Function implementing the myTask04 thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartTask04 */
+void StartTask04(void const * argument)
+{
+  /* USER CODE BEGIN StartTask04 */
+    /* Infinite loop */
+    osDelay (2000);
+    for (;;)
+    {
+	printf ("Task_03 Suspend+++++++++++++++++++++\r\n");
+	vTaskSuspend (myTask03Handle);
+	osDelay (2000);
+	printf ("Task_03 Restart---------------------\r\n");
+	vTaskResume (myTask03Handle);
+	osDelay (2000);
+    }
+  /* USER CODE END StartTask04 */
 }
 
 /* Private application code --------------------------------------------------*/
