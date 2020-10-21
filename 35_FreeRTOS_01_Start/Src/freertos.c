@@ -36,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+static uint32_t fac_us=0;							//us延时倍乘�?
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,20 +48,41 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-osThreadId defaultTaskHandle;
-osThreadId LED0Handle;
-osThreadId LED1Handle;
-osThreadId Start_taskHandle;
+osThreadId Name_Start_TaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+void delay_us (uint32_t nus)
+{
+    uint32_t ticks;
+    uint32_t told, tnow, tcnt = 0;
+    uint32_t reload = SysTick->LOAD;				//LOAD的�??
+    ticks = nus * fac_us; 						//�?要的节拍�?
+    told = SysTick->VAL;        				//刚进入时的计数器�?
+    while (1)
+    {
+	tnow = SysTick->VAL;
+	if (tnow != told)
+	{
+	    if (tnow < told)
+		tcnt += told - tnow;	//这里注意�?下SYSTICK是一个�?�减的计数器就可以了.
+	    else
+		tcnt += reload - tnow + told;
+	    told = tnow;
+	    if (tcnt >= ticks)
+		break;			//时间超过/等于要延迟的时间,则�??�?.
+	}
+    };
+}
+void delay_xms (uint32_t nms)
+{
+    uint32_t i;
+    for (i = 0; i < nms; i++)
+	delay_us (1000);
+}
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void const * argument);
-void StartTask02(void const * argument);
-void StartTask03(void const * argument);
-void StartTask_03(void const * argument);
+void Start_Task(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -108,21 +129,9 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-
-  /* definition and creation of LED0 */
-  osThreadDef(LED0, StartTask02, osPriorityNormal, 0, 128);
-  LED0Handle = osThreadCreate(osThread(LED0), NULL);
-
-  /* definition and creation of LED1 */
-  osThreadDef(LED1, StartTask03, osPriorityIdle, 0, 128);
-  LED1Handle = osThreadCreate(osThread(LED1), NULL);
-
-  /* definition and creation of Start_task */
-  osThreadDef(Start_task, StartTask_03, osPriorityIdle, 0, 256);
-  Start_taskHandle = osThreadCreate(osThread(Start_task), NULL);
+  /* definition and creation of Name_Start_Task */
+  osThreadDef(Name_Start_Task, Start_Task, osPriorityNormal, 0, 128);
+  Name_Start_TaskHandle = osThreadCreate(osThread(Name_Start_Task), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
@@ -130,79 +139,22 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_Start_Task */
 /**
- * @brief  Function implementing the defaultTask thread.
- * @param  argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
+  * @brief  Function implementing the Name_Start_Task thread.
+  * @param  argument: Not used 
+  * @retval None
+  */
+/* USER CODE END Header_Start_Task */
+void Start_Task(void const * argument)
 {
-  /* USER CODE BEGIN StartDefaultTask */
-    /* Infinite loop */
-    for (;;)
-    {
-	//printf ("test001\r\n");
-	osDelay (1000);
-    }
-  /* USER CODE END StartDefaultTask */
-}
-
-/* USER CODE BEGIN Header_StartTask02 */
-/**
- * @brief Function implementing the LED0 thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartTask02 */
-void StartTask02(void const * argument)
-{
-  /* USER CODE BEGIN StartTask02 */
-    /* Infinite loop */
-    for (;;)
-    {
-	HAL_GPIO_TogglePin (GPIOB, GPIO_PIN_0);
-	osDelay (100);
-    }
-  /* USER CODE END StartTask02 */
-}
-
-/* USER CODE BEGIN Header_StartTask03 */
-/**
- * @brief Function implementing the LED1 thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartTask03 */
-void StartTask03(void const * argument)
-{
-  /* USER CODE BEGIN StartTask03 */
-    /* Infinite loop */
-    for (;;)
-    {
-	HAL_GPIO_TogglePin (GPIOB, GPIO_PIN_1);
-	osDelay (50);
-    }
-  /* USER CODE END StartTask03 */
-}
-
-/* USER CODE BEGIN Header_StartTask_03 */
-/**
-* @brief Function implementing the Start_task thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartTask_03 */
-void StartTask_03(void const * argument)
-{
-  /* USER CODE BEGIN StartTask_03 */
+  /* USER CODE BEGIN Start_Task */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END StartTask_03 */
+  /* USER CODE END Start_Task */
 }
 
 /* Private application code --------------------------------------------------*/
