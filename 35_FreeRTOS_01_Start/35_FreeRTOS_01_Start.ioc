@@ -1,7 +1,7 @@
 #MicroXplorer Configuration settings - do not modify
 FREERTOS.FootprintOK=true
 FREERTOS.IPParameters=Tasks01,FootprintOK,configMAX_PRIORITIES,configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY
-FREERTOS.Tasks01=Name_Start_Task,0,128,Start_Task,Default,NULL,Dynamic,NULL,NULL;myTask02,-3,128,StartTask02,Default,NULL,Dynamic,NULL,NULL;myTask03,-3,128,StartTask03,Default,NULL,Dynamic,NULL,NULL;myTask04,3,128,StartTask04,Default,NULL,Dynamic,NULL,NULL
+FREERTOS.Tasks01=Name_Start_Task,0,128,Start_Task,Default,NULL,Dynamic,NULL,NULL;myTask02,-3,128,StartTask02,Default,NULL,Dynamic,NULL,NULL
 FREERTOS.configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY=5
 FREERTOS.configMAX_PRIORITIES=32
 File.Version=6
