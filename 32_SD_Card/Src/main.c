@@ -95,7 +95,7 @@ int main (void)
     uint64_t t, t1;
     t = (uint64_t) hsd.SdCard.BlockSize * (uint64_t) hsd.SdCard.BlockNbr;
     t = t >> 20;
-    printf ("Size %lu ,, %ld\r\n", t,j);
+    printf ("Size %lu ,, %ld\r\n", t,t1);
     /* USER CODE END 2 */
 
     /* Infinite loop */
