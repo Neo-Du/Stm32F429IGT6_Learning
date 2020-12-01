@@ -97,6 +97,8 @@ void W25Q256_Write_Enable ()
 void W25Q256_Erase_Sector (uint32_t addr)
 {
     uint8_t data_send = W25X_SectorErase;
+    W25Q256_Write_Enable ();
+
     Enable_W25Q256;
     HAL_SPI_Transmit (&hspi5, &data_send, 1, 100);
 
@@ -115,6 +117,8 @@ void W25Q256_Erase_Sector (uint32_t addr)
 void W25Q256_Erase_Page (uint32_t addr)
 {
     uint8_t data_send = W25X_BlockErase;
+
+    W25Q256_Write_Enable ();
     Enable_W25Q256;
     HAL_SPI_Transmit (&hspi5, &data_send, 1, 100);
 
@@ -131,7 +135,7 @@ void W25Q256_Erase_Page (uint32_t addr)
     W25Q256_Wait_Busy ();
 }
 // erase IC , takes around 70s
-void W25Q256_Erase_Chip()
+void W25Q256_Erase_Chip ()
 {
     W25Q256_Write_Enable ();
     W25Q256_Wait_Busy ();
