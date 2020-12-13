@@ -90,11 +90,11 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
   /* USER CODE END SPI5_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_SPI5_CLK_DISABLE();
-  
-    /**SPI5 GPIO Configuration    
+
+    /**SPI5 GPIO Configuration
     PF7     ------> SPI5_SCK
     PF8     ------> SPI5_MISO
-    PF9     ------> SPI5_MOSI 
+    PF9     ------> SPI5_MOSI
     */
     HAL_GPIO_DeInit(GPIOF, GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9);
 
@@ -102,7 +102,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 
   /* USER CODE END SPI5_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 
