@@ -64,12 +64,14 @@ CAN_RxHeaderTypeDef RxHeader;
 uint8_t TxData[8];
 uint8_t RxData[8];
 uint32_t TxMailbox;
+int temp,x,y;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config (void);
 /* USER CODE BEGIN PFP */
-
+HAL_StatusTypeDef CAN_TX (CAN_HandleTypeDef*hcan,uint8_t*txBuf,uint8_t len,uint8_t StdID);
+HAL_StatusTypeDef CAN_RX (CAN_HandleTypeDef*hcan,uint8_t*rxbuf,uint8_t*len);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -84,7 +86,7 @@ void SystemClock_Config (void);
 int main (void)
 {
     /* USER CODE BEGIN 1 */
-
+    uint8_t lens = 0;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -134,52 +136,38 @@ int main (void)
 	printf ("start error\r\n");
     }
 
-    /*##-4- Start the Transmission process #####################################*/
-    TxHeader.StdId = 0x11;
-    TxHeader.RTR = CAN_RTR_DATA;
-    TxHeader.IDE = CAN_ID_STD;
-    TxHeader.DLC = 2;
-    TxHeader.TransmitGlobalTime = DISABLE;
-    TxData[0] = 0xCA;
-    TxData[1] = 0xFE;
 
-    /* Request transmission */
-    if (HAL_CAN_AddTxMessage (&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-    {
-	/* Transmission request Error */
-	printf ("add error\r\n");
-    }
+    TxData[1] = 0x22;
+    TxData[2] = 0x33;
+    TxData[3] = 0x44;
+    TxData[4] = 0x55;
+    TxData[5] = 0x66;
+    TxData[6] = 0x77;
+    TxData[7] = 0x88;
 
-    /* Wait transmission complete */
-    while (HAL_CAN_GetTxMailboxesFreeLevel (&hcan1) != 3)
-    {
-    }
-
-    /*##-5- Start the Reception process ########################################*/
-    if (HAL_CAN_GetRxFifoFillLevel (&hcan1, CAN_RX_FIFO0) != 1)
-    {
-	/* Reception Missing */
-	printf ("rx error\r\n");
-    }
-
-    if (HAL_CAN_GetRxMessage (&hcan1, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
-    {
-	/* Reception Error */
-	printf ("get rx error\r\n");
-    }
-
-    if ((RxHeader.StdId != 0x11) || (RxHeader.RTR != CAN_RTR_DATA) || (RxHeader.IDE != CAN_ID_STD) || (RxHeader.DLC != 2) || ((RxData[0] << 8 | RxData[1]) != 0xCAFE))
-    {
-	/* Rx message Error */
-	printf ("receive error\r\n");
-    }
-    printf("send down\r\n");
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
+    x = 0;
+    y = 0;
     while (1)
     {
+	if (x++ == 200)
+	    x = 0;
+	for (y = 0; y < 8; y++)
+	{
+	    TxData[y] = x+y;
+	}
+
+	CAN_TX (&hcan1, TxData, 8, 0x18);
+	CAN_RX (&hcan1, RxData, &lens);
+	printf ("send done\r\n");
+	for (temp = 0; temp < 8; temp++)
+	{
+	    printf ("0X%x\t ", RxData[temp]);
+	}
+	printf ("\r\nreceive done\r\n");
 	/* USER CODE END WHILE */
 
 	/* USER CODE BEGIN 3 */
@@ -235,6 +223,47 @@ void SystemClock_Config (void)
 }
 
 /* USER CODE BEGIN 4 */
+HAL_StatusTypeDef CAN_TX (CAN_HandleTypeDef*hcan,uint8_t*txbuf,uint8_t len,uint8_t StdID)
+{
+    CAN_TxHeaderTypeDef txHeader;
+    uint32_t txmailbox;
+
+    txHeader.StdId = StdID;
+    txHeader.RTR = CAN_RTR_DATA;
+    txHeader.IDE = CAN_ID_STD;
+    txHeader.DLC = len;
+    TxHeader.TransmitGlobalTime = DISABLE;
+
+    if (HAL_CAN_AddTxMessage (hcan, &txHeader, txbuf, &txmailbox) != HAL_OK)
+    {
+	printf ("add error\r\n");
+	return HAL_ERROR;
+    }
+
+    while (HAL_CAN_GetTxMailboxesFreeLevel (&hcan1) != 3)
+    {
+    }
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef CAN_RX (CAN_HandleTypeDef*hcan,uint8_t*rxbuf,uint8_t*len)
+{
+    CAN_TxHeaderTypeDef rxHeader;
+
+    if (HAL_CAN_GetRxFifoFillLevel (hcan, CAN_RX_FIFO0) != 1)
+    {
+	/* Reception Missing */
+	printf ("rx error\r\n");
+    }
+
+    if (HAL_CAN_GetRxMessage (hcan, CAN_RX_FIFO0, &rxHeader, rxbuf) != HAL_OK)
+    {
+	/* Reception Error */
+	printf ("get rx error\r\n");
+    }
+    *len = rxHeader.DLC;
+    return HAL_OK;
+}
 
 /* USER CODE END 4 */
 
