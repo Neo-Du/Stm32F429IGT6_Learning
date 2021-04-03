@@ -106,7 +106,7 @@ int main(void)
     while (1)
     {
 	HAL_UART_Transmit (&huart2, send_buf, 5, 10);
-	HAL_Delay(10);
+	HAL_Delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

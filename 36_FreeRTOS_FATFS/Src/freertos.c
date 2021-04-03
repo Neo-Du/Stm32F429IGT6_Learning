@@ -91,6 +91,10 @@ FRESULT scan_files (char*path) /* Start node to be scanned (also used as work ar
 	    }
 	}
     }
+    else
+    {
+	printf("error\r\n");
+    }
     return res;
 }
 /* USER CODE END Variables */
